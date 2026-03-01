@@ -2,7 +2,9 @@ services:
   redis:
     image: redis:7.4-alpine
     container_name: poofmq-redis
-    command: ["redis-server", "--save", "", "--appendonly", "no"]
+    volumes:
+      - ./infra/redis/redis.local.conf:/usr/local/etc/redis/redis.conf:ro
+    command: ["redis-server", "/usr/local/etc/redis/redis.conf"]
     ports:
       - "${REDIS_HOST_PORT:-6379}:6379"
     healthcheck:

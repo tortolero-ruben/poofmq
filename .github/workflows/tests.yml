@@ -55,7 +55,7 @@ jobs:
       - name: Compile Proto Contract
         if: matrix.php-version == '8.4'
         run: |
-          docker run --rm -v "$PWD":/defs namely/protoc-all:1.51_2 -d proto -l descriptor_set -o /defs/.tmp-proto --descr-filename poofmq.pb
+          docker run --rm --user "$(id -u):$(id -g)" -v "$PWD":/defs namely/protoc-all:1.51_2 -d proto -l descriptor_set -o /defs/.tmp-proto --descr-filename poofmq.pb
           test -f .tmp-proto/poofmq.pb
           rm -rf .tmp-proto
 

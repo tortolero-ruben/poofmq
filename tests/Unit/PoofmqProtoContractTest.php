@@ -44,10 +44,18 @@ it('compiles the poofmq proto contract to a descriptor set', function () {
         mkdir($outputDirectory, 0755, true);
     }
 
-    $compile = new Process([
+    $command = [
         'docker',
         'run',
         '--rm',
+    ];
+
+    if (function_exists('posix_getuid') && function_exists('posix_getgid')) {
+        $command[] = '--user';
+        $command[] = posix_getuid().':'.posix_getgid();
+    }
+
+    $command = array_merge($command, [
         '-v',
         $projectRoot.':/defs',
         'namely/protoc-all:1.51_2',
@@ -60,6 +68,8 @@ it('compiles the poofmq proto contract to a descriptor set', function () {
         '--descr-filename',
         'poofmq.pb',
     ]);
+
+    $compile = new Process($command);
     $compile->setTimeout(180);
     $compile->run();
 

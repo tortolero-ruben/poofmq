@@ -28,6 +28,10 @@ All Redis keys MUST use a two-level namespace with a product root and domain:
 
 This keeps room for non-breaking schema evolution (`v2`) and prevents collisions with other apps sharing Redis.
 
+Namespace migration expectation:
+
+- A future `poofmq:v2` rollout MUST be forward-compatible during migration windows by dual-reading (`v1` + `v2`) until backfill/cutover is complete, then removing `v1` reads on a scheduled deprecation date.
+
 ### 2) Queue Key Model
 
 Queue resources and message resources MUST use the following key schema:
@@ -74,15 +78,15 @@ Policy:
 3. Requested TTL below global min (`1`) is rejected with validation error.
 4. Per-message TTL override is allowed only within global min/max.
 5. Queue-level default TTL override is not part of MVP; if introduced later, it MUST remain within global min/max.
-6. Queue metadata key TTL should be refreshed to `max(message TTL in queue) + GLOBAL_QUEUE_TTL_GRACE_SECONDS`; it should expire after the queue becomes empty/idle.
+6. Queue metadata key TTL SHOULD be derived from the latest message expiry timestamp in `poofmq:v1:queue:{queueId}:idx`: on writes, compute remaining time until the highest expiry score and set/refresh metadata TTL to `remaining_time_until_latest_expiry + GLOBAL_QUEUE_TTL_GRACE_SECONDS`, so metadata expires shortly after the last message and after the queue becomes empty/idle.
 
 This policy enforces ephemerality and caps memory/cost by default while keeping queue-level flexibility.
 
 ### 5) Auth TTL and Revocation Retention
 
-- `auth:token:{jti}` TTL MUST be token expiry + 300 seconds skew buffer.
-- `auth:revoke:token:{jti}` TTL MUST be at least the remaining token lifetime + 300 seconds.
-- `auth:revoke:subject:{subjectId}` MUST be retained for at least max token lifetime supported by the issuer.
+- `poofmq:v1:auth:token:{jti}`: on write, Redis TTL MUST be set to `(token_expiry_timestamp - current_time) + 300 seconds` (skew buffer). Equivalently, this key MUST NOT exist after `token_expiry_timestamp + 300 seconds`.
+- `poofmq:v1:auth:revoke:token:{jti}`: on write, Redis TTL MUST be set to at least `(token_expiry_timestamp - current_time) + 300 seconds`. Equivalently, this key MUST exist until at least `token_expiry_timestamp + 300 seconds`.
+- `poofmq:v1:auth:revoke:subject:{subjectId}`: on write, Redis TTL MUST be set to at least `MAX_TOKEN_LIFETIME_SUPPORTED_BY_ISSUER` seconds from revocation write time.
 
 ## Revocation Propagation Expectations
 
@@ -122,9 +126,10 @@ Tradeoffs:
 Implementation tasks MUST reference this ADR and reuse these constants (or equivalent config keys):
 
 - `poofmq:v1` namespace root
-- `GLOBAL_QUEUE_TTL_DEFAULT_SECONDS=600`
-- `GLOBAL_QUEUE_TTL_MAX_SECONDS=86400`
+- `GLOBAL_QUEUE_TTL_DEFAULT_SECONDS = 600`
+- `GLOBAL_QUEUE_TTL_MAX_SECONDS = 86400`
 - Revocation propagation target: p95 <= 2 seconds, max <= 5 seconds
+- API/proto validation MUST enforce `GLOBAL_QUEUE_TTL_MIN_SECONDS` and `GLOBAL_QUEUE_TTL_MAX_SECONDS`.
 
 RUB-242 must use these values when validating ephemerality/cost and revocation NFR assumptions.
 

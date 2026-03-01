@@ -1,6 +1,7 @@
 .PHONY: infra-up infra-down bootstrap portal-dev full-stack \
 	ci-lint-laravel ci-lint-frontend ci-lint-go ci-test-laravel ci-test-go \
-	proto-generate proto-deps proto-check-generated generate-artifacts ci-check-generated
+	proto-generate proto-deps proto-check-generated generate-artifacts ci-check-generated \
+	setup-hooks
 
 BUF_VERSION ?= 1.53.0
 BUF_IMAGE ?= bufbuild/buf:$(BUF_VERSION)
@@ -65,3 +66,9 @@ generate-artifacts:
 
 ci-check-generated:
 	./scripts/check-generated-artifacts.sh
+
+setup-hooks:
+	@echo "Setting up git hooks..."
+	@cp scripts/git-hooks/pre-commit .git/hooks/pre-commit
+	@chmod +x .git/hooks/pre-commit
+	@echo "✓ Pre-commit hook installed. Go vet/test will run before commits."

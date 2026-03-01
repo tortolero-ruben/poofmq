@@ -1,0 +1,100 @@
+syntax = "proto3";
+
+package poofmq.v1;
+
+option go_package = "github.com/rubyapps/poofmq/gen/go/poofmq/v1;poofmqv1";
+
+import "google/api/annotations.proto";
+import "google/protobuf/struct.proto";
+import "google/protobuf/timestamp.proto";
+
+service QueueService {
+  rpc Push(PushMessageRequest) returns (PushMessageResponse) {
+    option (google.api.http) = {
+      post: "/v1/queues/{queue_id}/messages"
+      body: "*"
+    };
+  }
+
+  rpc Pop(PopMessageRequest) returns (PopMessageResponse) {
+    option (google.api.http) = {
+      post: "/v1/queues/{queue_id}/messages:pop"
+      body: "*"
+    };
+  }
+}
+
+message PushMessageRequest {
+  string queue_id = 1;
+  PayloadEnvelope envelope = 2;
+  // Distinguishes unset from explicit zero for policy/defaulting behavior.
+  optional int32 ttl_seconds = 3;
+  google.protobuf.Timestamp available_at = 4;
+  string idempotency_key = 5;
+}
+
+message PushMessageResponse {
+  string message_id = 1;
+  google.protobuf.Timestamp queued_at = 2;
+  google.protobuf.Timestamp expires_at = 3;
+}
+
+message PopMessageRequest {
+  string queue_id = 1;
+  // Distinguishes unset from explicit zero for consumer timeout semantics.
+  optional int32 visibility_timeout_seconds = 2;
+  // Distinguishes unset from explicit zero for long-poll semantics.
+  optional int32 wait_timeout_seconds = 3;
+  string consumer_id = 4;
+}
+
+message PopMessageResponse {
+  QueueMessage message = 1;
+}
+
+message QueueMessage {
+  string message_id = 1;
+  string queue_id = 2;
+  PayloadEnvelope envelope = 3;
+  google.protobuf.Timestamp queued_at = 4;
+  google.protobuf.Timestamp visible_at = 5;
+  google.protobuf.Timestamp expires_at = 6;
+  string receipt_handle = 7;
+}
+
+enum EncryptionMode {
+  ENCRYPTION_MODE_UNSPECIFIED = 0;
+  ENCRYPTION_MODE_UNENCRYPTED = 1;
+  ENCRYPTION_MODE_EDGE_ENCRYPTED = 2;
+  ENCRYPTION_MODE_CLIENT_ENCRYPTED = 3;
+}
+
+message PayloadEnvelope {
+  /*
+   * Semantic requirement for MVP:
+   * - event_type is required and MUST be non-empty.
+   * - payload is required and MUST contain an object value.
+   * - metadata is optional and may be omitted (empty map).
+   *
+   * MVP encryption field matrix:
+   * - ENCRYPTION_MODE_UNENCRYPTED:
+   *   payload required; encrypted_payload and encryption_* fields must be empty.
+   * - ENCRYPTION_MODE_EDGE_ENCRYPTED:
+   *   payload required (plaintext at API boundary); encrypted_payload must be empty.
+   *   encryption_mode and encryption_key_id may be set for downstream KMS policy.
+   * - ENCRYPTION_MODE_CLIENT_ENCRYPTED:
+   *   encrypted_payload and encryption_algorithm are required.
+   *   encryption_iv and encryption_auth_tag are required when algorithm needs them.
+   *   payload should only carry safe/indexable fields and must not contain sensitive plaintext.
+   */
+  string event_type = 1;
+  google.protobuf.Struct payload = 2;
+  map<string, string> metadata = 3;
+  EncryptionMode encryption_mode = 4;
+  string encryption_key_id = 5;
+  string encryption_algorithm = 6;
+  bytes encrypted_payload = 7;
+  bytes encrypted_data_key = 8;
+  bytes encryption_iv = 9;
+  bytes encryption_auth_tag = 10;
+}

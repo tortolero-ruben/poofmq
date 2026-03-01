@@ -28,60 +28,54 @@ it('defines the canonical poofmq proto contract for mvp queue operations', funct
         ->and($contract)->toContain('post: "/v1/queues/{queue_id}/messages:pop"');
 });
 
-it('compiles the poofmq proto contract to a descriptor set', function () {
+it('generates gRPC, gateway, and openapi artifacts deterministically', function () {
     $projectRoot = dirname(__DIR__, 2);
-    $outputDirectory = $projectRoot.'/.tmp-proto-test';
-    $descriptorFile = $outputDirectory.'/poofmq.pb';
+    $generatedFiles = [
+        $projectRoot.'/gen/go/poofmq/v1/poofmq.pb.go',
+        $projectRoot.'/gen/go/poofmq/v1/poofmq_grpc.pb.go',
+        $projectRoot.'/gen/go/poofmq/v1/poofmq.pb.gw.go',
+        $projectRoot.'/gen/openapi/poofmq.swagger.json',
+    ];
 
     $dockerCheck = new Process(['docker', '--version']);
     $dockerCheck->run();
 
     if (! $dockerCheck->isSuccessful()) {
-        $this->markTestSkipped('Docker is required to compile proto contracts in this test.');
+        $this->markTestSkipped('Docker is required to generate proto artifacts in this test.');
     }
 
-    if (! is_dir($outputDirectory)) {
-        mkdir($outputDirectory, 0755, true);
+    $runGenerate = fn () => tap(new Process(['make', 'proto-generate'], $projectRoot), function (Process $process): void {
+        $process->setTimeout(180);
+        $process->run();
+    });
+
+    $collectHashes = function () use ($generatedFiles): array {
+        $hashes = [];
+
+        foreach ($generatedFiles as $generatedFile) {
+            expect($generatedFile)->toBeFile();
+            $hashes[$generatedFile] = hash_file('sha256', $generatedFile);
+        }
+
+        return $hashes;
+    };
+
+    $initialHashes = $collectHashes();
+
+    $generateRun = $runGenerate();
+    if (! $generateRun->isSuccessful()) {
+        $output = $generateRun->getErrorOutput().$generateRun->getOutput();
+
+        if (str_contains($output, 'resource_exhausted: too many requests')) {
+            $this->markTestSkipped('Buf registry rate limited generation in CI/local verification.');
+        }
     }
 
-    $command = [
-        'docker',
-        'run',
-        '--rm',
-    ];
+    expect($generateRun->isSuccessful())->toBeTrue($generateRun->getErrorOutput().$generateRun->getOutput());
 
-    if (function_exists('posix_getuid') && function_exists('posix_getgid')) {
-        $command[] = '--user';
-        $command[] = posix_getuid().':'.posix_getgid();
-    }
+    expect($collectHashes())->toEqual($initialHashes);
 
-    $command = array_merge($command, [
-        '-v',
-        $projectRoot.':/defs',
-        'namely/protoc-all:1.51_2',
-        '-d',
-        'proto',
-        '-l',
-        'descriptor_set',
-        '-o',
-        '/defs/.tmp-proto-test',
-        '--descr-filename',
-        'poofmq.pb',
-    ]);
-
-    $compile = new Process($command);
-    $compile->setTimeout(180);
-    $compile->run();
-
-    expect($compile->isSuccessful())
-        ->toBeTrue($compile->getErrorOutput().$compile->getOutput());
-    expect($descriptorFile)->toBeFile();
-
-    if (is_file($descriptorFile)) {
-        unlink($descriptorFile);
-    }
-
-    if (is_dir($outputDirectory)) {
-        rmdir($outputDirectory);
+    foreach ($generatedFiles as $generatedFile) {
+        expect(filesize($generatedFile))->toBeGreaterThan(0);
     }
 });

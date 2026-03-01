@@ -105,4 +105,6 @@ make bootstrap   # install deps + start infra + migrate
 make infra-up    # start redis + postgres
 make infra-down  # stop stack
 make full-stack  # start all containers then run portal dev stack
+make proto-generate         # regenerate gRPC, gateway, and OpenAPI artifacts
+make proto-check-generated  # regenerate and fail if tracked artifacts drift
 ```

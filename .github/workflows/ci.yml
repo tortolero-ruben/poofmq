@@ -1,0 +1,137 @@
+name: ci
+
+on:
+  pull_request:
+    branches:
+      - main
+      - master
+      - develop
+      - workos
+  push:
+    branches:
+      - main
+      - master
+      - develop
+      - workos
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  generated-artifacts:
+    name: generated-artifacts
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Check generated artifact drift
+        run: make ci-check-generated
+
+  laravel-lint:
+    name: laravel-lint
+    runs-on: ubuntu-latest
+    needs: generated-artifacts
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          tools: composer:v2
+
+      - name: Install dependencies
+        run: composer install --no-interaction --prefer-dist --optimize-autoloader
+
+      - name: Run Laravel lint checks
+        run: make ci-lint-laravel
+
+  frontend-lint:
+    name: frontend-lint
+    runs-on: ubuntu-latest
+    needs: generated-artifacts
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run frontend lint checks
+        run: make ci-lint-frontend
+
+  laravel-tests:
+    name: laravel-tests
+    runs-on: ubuntu-latest
+    needs: generated-artifacts
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          tools: composer:v2
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+
+      - name: Install PHP dependencies
+        run: composer install --no-interaction --prefer-dist --optimize-autoloader
+
+      - name: Install Node dependencies
+        run: npm ci
+
+      - name: Prepare application
+        run: |
+          cp .env.example .env
+          php artisan key:generate --force --no-interaction
+          npm run build
+
+      - name: Run Laravel tests
+        run: make ci-test-laravel
+
+  go-lint:
+    name: go-lint
+    runs-on: ubuntu-latest
+    needs: generated-artifacts
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: services/go-api/go.mod
+
+      - name: Run Go lint checks
+        run: make ci-lint-go
+
+  go-tests:
+    name: go-tests
+    runs-on: ubuntu-latest
+    needs: generated-artifacts
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: services/go-api/go.mod
+
+      - name: Run Go tests
+        run: make ci-test-go

@@ -105,4 +105,31 @@ make bootstrap   # install deps + start infra + migrate
 make infra-up    # start redis + postgres
 make infra-down  # stop stack
 make full-stack  # start all containers then run portal dev stack
+make proto-generate         # regenerate gRPC, gateway, and OpenAPI artifacts
+make proto-check-generated  # regenerate and fail if tracked artifacts drift
+BUF_VERSION=1.52.0 make proto-generate  # override default buf image version
+```
+
+## CI Status Checks
+
+Pull requests are gated by the `ci` GitHub Actions workflow. Configure these job checks as required branch protections:
+
+- `generated-artifacts`: runs `make ci-check-generated` and fails when generated proto/OpenAPI artifacts drift (`buf.lock`, `gen/go`, `gen/openapi`).
+- `laravel-lint`: runs `make ci-lint-laravel` (`composer lint:check` / Pint).
+- `frontend-lint`: runs `make ci-lint-frontend` (Prettier, ESLint, TypeScript checks).
+- `laravel-tests`: runs `make ci-test-laravel` (`php artisan test --compact`).
+- `go-lint`: runs `make ci-lint-go` (`gofmt` drift check + `go vet`).
+- `go-tests`: runs `make ci-test-go` (`go test ./...`).
+
+For local parity before pushing:
+
+```bash
+make generate-artifacts
+make ci-check-generated
+make proto-check-generated
+make ci-lint-laravel
+make ci-lint-frontend
+make ci-test-laravel
+make ci-lint-go
+make ci-test-go
 ```

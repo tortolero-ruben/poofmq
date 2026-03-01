@@ -7,17 +7,17 @@ import (
 
 // Config contains runtime settings for the Go API process.
 type Config struct {
-	HTTPPort        string
-	LogLevel        string
-	AllowOrigin     string
-	RedisHost       string
-	RedisPort       string
-	RedisPassword   string
-	RedisQueue      string
-	PostgresHost    string
-	PostgresPort    string
-	PostgresDB      string
-	PostgresUser    string
+	HTTPPort         string
+	LogLevel         string
+	AllowOrigin      string
+	RedisHost        string
+	RedisPort        string
+	RedisPassword    string
+	RedisQueue       string
+	PostgresHost     string
+	PostgresPort     string
+	PostgresDB       string
+	PostgresUser     string
 	PostgresPassword string
 }
 

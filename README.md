@@ -41,6 +41,22 @@ npm install
 docker compose up -d
 ```
 
+If a local port is already in use, override host ports in `.env` before startup:
+
+```bash
+REDIS_HOST_PORT=16379
+POSTGRES_HOST_PORT=15432
+GO_API_HOST_PORT=18081
+```
+
+Then align Laravel app ports in `.env`:
+
+```bash
+REDIS_PORT=16379
+DB_PORT=15432
+GO_API_BASE_URL=http://localhost:18081
+```
+
 4. Initialize Laravel and run migrations.
 
 ```bash
@@ -54,11 +70,11 @@ php artisan migrate --force
 composer run dev
 ```
 
-Local endpoints:
+Local endpoints (defaults; host ports are configurable):
 - Laravel portal: `http://localhost:8000`
-- Go API: `http://localhost:8080`
-- Redis: `localhost:6379`
-- Postgres: `localhost:5432`
+- Go API: `http://localhost:${GO_API_HOST_PORT:-8080}`
+- Redis: `localhost:${REDIS_HOST_PORT:-6379}`
+- Postgres: `localhost:${POSTGRES_HOST_PORT:-5432}`
 
 ## Environment Ownership Contract
 

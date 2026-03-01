@@ -4,7 +4,7 @@ services:
     container_name: poofmq-redis
     command: ["redis-server", "--save", "", "--appendonly", "no"]
     ports:
-      - "6379:6379"
+      - "${REDIS_HOST_PORT:-6379}:6379"
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 5s
@@ -19,7 +19,7 @@ services:
       POSTGRES_PASSWORD: poofmq
       POSTGRES_DB: poofmq
     ports:
-      - "5432:5432"
+      - "${POSTGRES_HOST_PORT:-5432}:5432"
     volumes:
       - postgres-data:/var/lib/postgresql/data
     healthcheck:
@@ -54,7 +54,7 @@ services:
       RAILWAY_ENVIRONMENT_NAME: local
       RAILWAY_PROJECT_ID: local
     ports:
-      - "8080:8080"
+      - "${GO_API_HOST_PORT:-8080}:8080"
 
 volumes:
   postgres-data:

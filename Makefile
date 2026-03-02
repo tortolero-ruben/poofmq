@@ -2,7 +2,7 @@
 	ci-lint-laravel ci-lint-frontend ci-lint-go ci-test-laravel ci-test-go \
 	ci-test-go-unit ci-test-go-integration \
 	proto-generate proto-deps proto-check-generated generate-artifacts ci-check-generated \
-	setup-hooks
+	openapi-publish sdk-generate setup-hooks
 
 BUF_VERSION ?= 1.53.0
 BUF_IMAGE ?= bufbuild/buf:$(BUF_VERSION)
@@ -66,11 +66,21 @@ proto-deps:
 
 proto-check-generated:
 	$(MAKE) proto-generate
-	git diff --exit-code -- buf.lock gen/go gen/openapi
-	test -z "$$(git ls-files --others --exclude-standard -- buf.lock gen/go gen/openapi)"
+	./scripts/inject-openapi-version.sh
+	$(MAKE) openapi-publish
+	git diff --exit-code -- buf.lock gen/go gen/openapi dist/openapi
+	test -z "$$(git ls-files --others --exclude-standard -- buf.lock gen/go gen/openapi dist/openapi)"
 
 generate-artifacts:
 	./scripts/generate-artifacts.sh
+
+openapi-publish:
+	@mkdir -p dist/openapi/v1
+	@cp gen/openapi/poofmq.swagger.json dist/openapi/v1/poofmq.json
+	@echo "Published OpenAPI artifact to dist/openapi/v1/poofmq.json"
+
+sdk-generate:
+	./scripts/sdk-generate.sh
 
 ci-check-generated:
 	./scripts/check-generated-artifacts.sh

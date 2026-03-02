@@ -27,3 +27,12 @@ yarn-error.log
 /.nova
 /.vscode
 /.zed
+/sdks/node/generated
+/sdks/python/generated
+/sdks/go/generated
+/sdks/java/generated
+/sdks/node/node_modules
+/sdks/node/dist
+/sdks/python/.pytest_cache
+/sdks/python/*.egg-info
+/sdks/python/**/__pycache__

@@ -11,13 +11,13 @@ import { useClipboard } from '@/hooks/use-clipboard';
 import AppLayout from '@/layouts/app-layout';
 import SettingsLayout from '@/layouts/settings/layout';
 import { jsonHeaders } from '@/lib/utils';
-import type { BreadcrumbItem } from '@/types';
 import {
     destroy as destroyApiKey,
     index as apiKeysIndex,
     store as storeApiKey,
 } from '@/routes/api-keys';
 import { index as projectsIndex } from '@/routes/projects';
+import type { BreadcrumbItem } from '@/types';
 
 type ProjectOption = {
     id: string;

@@ -1,9 +1,9 @@
 import { Head } from '@inertiajs/react';
 import { BookOpen, Code2, FileCode } from 'lucide-react';
 import AppLayout from '@/layouts/app-layout';
+import type { BreadcrumbItem } from '@/types';
 import { dashboard } from '@/routes';
 import { index as developersIndex } from '@/routes/developers';
-import type { BreadcrumbItem } from '@/types';
 
 const REPOSITORY_URL = 'https://github.com/tortolero-ruben/poofmq';
 const QUICKSTART_URL = `${REPOSITORY_URL}/blob/main/docs/quickstart.md`;

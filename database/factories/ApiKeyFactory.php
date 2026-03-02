@@ -35,6 +35,7 @@ class ApiKeyFactory extends Factory
 
         return [
             'user_id' => User::factory(),
+            'project_id' => null,
             'name' => fake()->words(3, true),
             'key_prefix' => $keyPrefix,
             'key_hash' => $keyHash,

@@ -25,6 +25,16 @@ class User extends Authenticatable
     }
 
     /**
+     * Get the projects for the user.
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany<\App\Models\Project>
+     */
+    public function projects(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(Project::class);
+    }
+
+    /**
      * The attributes that are mass assignable.
      *
      * @var list<string>

@@ -34,6 +34,7 @@ class ApiKey extends Model
      */
     protected $fillable = [
         'user_id',
+        'project_id',
         'name',
         'key_prefix',
         'key_hash',
@@ -70,6 +71,14 @@ class ApiKey extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    /**
+     * Get the project that the API key belongs to.
+     */
+    public function project(): BelongsTo
+    {
+        return $this->belongsTo(Project::class);
     }
 
     /**

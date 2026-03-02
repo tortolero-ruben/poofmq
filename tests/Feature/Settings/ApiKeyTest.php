@@ -87,6 +87,27 @@ test('users cannot create an api key for another users project', function () {
     ]);
 });
 
+test('users cannot create an api key for an archived project', function () {
+    $user = User::factory()->create();
+    $project = Project::factory()->create([
+        'user_id' => $user->id,
+        'archived_at' => now(),
+    ]);
+
+    $response = $this->actingAs($user)->postJson(route('api-keys.store'), [
+        'name' => 'Archived Project API Key',
+        'project_id' => $project->id,
+    ]);
+
+    $response->assertUnprocessable();
+    $response->assertJsonValidationErrors(['project_id']);
+
+    $this->assertDatabaseMissing('api_keys', [
+        'user_id' => $user->id,
+        'name' => 'Archived Project API Key',
+    ]);
+});
+
 test('users can create an api key with expiration date', function () {
     Bus::fake();
 

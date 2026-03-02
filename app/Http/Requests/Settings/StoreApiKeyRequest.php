@@ -28,7 +28,11 @@ class StoreApiKeyRequest extends FormRequest
             'project_id' => [
                 'nullable',
                 'ulid',
-                Rule::exists('projects', 'id')->where(fn ($query) => $query->where('user_id', $this->user()->id)),
+                Rule::exists('projects', 'id')->where(
+                    fn ($query) => $query
+                        ->where('user_id', $this->user()->id)
+                        ->whereNull('archived_at')
+                ),
             ],
             'expires_at' => ['nullable', 'date', 'after:now'],
         ];

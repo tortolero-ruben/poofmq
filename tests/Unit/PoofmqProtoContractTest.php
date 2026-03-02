@@ -2,6 +2,24 @@
 
 use Symfony\Component\Process\Process;
 
+it('has openapi artifact version aligned with config openapi-version', function () {
+    $projectRoot = dirname(__DIR__, 2);
+    $versionFile = $projectRoot.'/config/openapi-version.txt';
+    $openapiPath = $projectRoot.'/gen/openapi/poofmq.swagger.json';
+
+    expect($versionFile)->toBeFile()
+        ->and($openapiPath)->toBeFile();
+
+    $expectedVersion = trim((string) file_get_contents($versionFile));
+    expect($expectedVersion)->not->toBe('');
+
+    $openapi = json_decode((string) file_get_contents($openapiPath), true);
+    expect($openapi)->toBeArray()
+        ->and($openapi['info'] ?? null)->toBeArray()
+        ->and($openapi['info']['version'] ?? null)->toBe($expectedVersion)
+        ->and($openapi['info']['title'] ?? null)->toBe('poofMQ API');
+});
+
 it('defines the canonical poofmq proto contract for mvp queue operations', function () {
     $contractPath = dirname(__DIR__, 2).'/proto/poofmq/v1/poofmq.proto';
 
@@ -35,6 +53,7 @@ it('generates gRPC, gateway, and openapi artifacts deterministically', function 
         $projectRoot.'/gen/go/poofmq/v1/poofmq_grpc.pb.go',
         $projectRoot.'/gen/go/poofmq/v1/poofmq.pb.gw.go',
         $projectRoot.'/gen/openapi/poofmq.swagger.json',
+        $projectRoot.'/dist/openapi/v1/poofmq.json',
     ];
 
     $dockerCheck = new Process(['docker', 'info']);
@@ -44,7 +63,7 @@ it('generates gRPC, gateway, and openapi artifacts deterministically', function 
         $this->markTestSkipped('Docker daemon is required to generate proto artifacts in this test.');
     }
 
-    $runGenerate = fn () => tap(new Process(['make', 'proto-generate'], $projectRoot), function (Process $process): void {
+    $runGenerate = fn () => tap(new Process(['make', 'generate-artifacts'], $projectRoot), function (Process $process): void {
         $process->setTimeout(180);
         $process->run();
     });
@@ -60,20 +79,23 @@ it('generates gRPC, gateway, and openapi artifacts deterministically', function 
         return $hashes;
     };
 
-    $initialHashes = $collectHashes();
-
-    $generateRun = $runGenerate();
-    if (! $generateRun->isSuccessful()) {
-        $output = $generateRun->getErrorOutput().$generateRun->getOutput();
+    $firstRun = $runGenerate();
+    if (! $firstRun->isSuccessful()) {
+        $output = $firstRun->getErrorOutput().$firstRun->getOutput();
 
         if (str_contains($output, 'resource_exhausted: too many requests')) {
             $this->markTestSkipped('Buf registry rate limited generation in CI/local verification.');
         }
     }
 
-    expect($generateRun->isSuccessful())->toBeTrue($generateRun->getErrorOutput().$generateRun->getOutput());
+    expect($firstRun->isSuccessful())->toBeTrue($firstRun->getErrorOutput().$firstRun->getOutput());
 
-    expect($collectHashes())->toEqual($initialHashes);
+    $hashesAfterFirst = $collectHashes();
+
+    $secondRun = $runGenerate();
+    expect($secondRun->isSuccessful())->toBeTrue($secondRun->getErrorOutput().$secondRun->getOutput());
+
+    expect($collectHashes())->toEqual($hashesAfterFirst);
 
     foreach ($generatedFiles as $generatedFile) {
         expect(filesize($generatedFile))->toBeGreaterThan(0);

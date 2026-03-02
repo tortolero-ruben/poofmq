@@ -98,6 +98,10 @@ Cloudflare target mapping:
 
 These mappings are also defined in [`config/topology.php`](config/topology.php) under `deployment_targets`.
 
+## Quickstart and SDKs
+
+See [docs/quickstart.md](docs/quickstart.md) for API base URL, Node.js and Python SDK install and usage. The portal **Developers** page (when logged in) links to in-repo quickstart and SDK docs.
+
 ## Convenience Commands
 
 ```bash
@@ -106,6 +110,9 @@ make infra-up    # start redis + postgres
 make infra-down  # stop stack
 make full-stack  # start all containers then run portal dev stack
 make proto-generate         # regenerate gRPC, gateway, and OpenAPI artifacts
+make generate-artifacts    # regenerate all artifacts, inject OpenAPI version, and publish to dist/
+make openapi-publish       # copy gen/openapi/poofmq.swagger.json to dist/openapi/v1/poofmq.json
+make sdk-generate          # regenerate Node/Python/Go/Java SDK stubs from OpenAPI (requires Docker)
 make proto-check-generated  # regenerate and fail if tracked artifacts drift
 BUF_VERSION=1.52.0 make proto-generate  # override default buf image version
 ```

@@ -14,6 +14,16 @@ class User extends Authenticatable
     use HasFactory, Notifiable, TwoFactorAuthenticatable;
 
     /**
+     * Get the API keys for the user.
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany<\App\Models\ApiKey>
+     */
+    public function apiKeys(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(ApiKey::class);
+    }
+
+    /**
      * The attributes that are mass assignable.
      *
      * @var list<string>

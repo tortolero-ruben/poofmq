@@ -1,5 +1,5 @@
 // Package envelope provides message envelope serialization for dynamic JSON payloads.
-// It handles encoding/decoding of PayloadEnvelope structures with support for
+// It handles encoding/decoding of Envelope structures with support for
 // arbitrary JSON payloads, metadata, and encryption fields.
 package envelope
 
@@ -146,11 +146,16 @@ func NewEnvelope(eventType string, payload Payload) *Envelope {
 }
 
 // NewEnvelopeWithMetadata creates a new envelope with metadata.
+// Metadata is always initialized to a non-nil map to match NewEnvelope behavior.
 func NewEnvelopeWithMetadata(eventType string, payload Payload, metadata Metadata) *Envelope {
+	md := metadata
+	if md == nil {
+		md = make(Metadata)
+	}
 	return &Envelope{
 		EventType: eventType,
 		Payload:   payload,
-		Metadata:  metadata,
+		Metadata:  md,
 	}
 }
 
@@ -184,6 +189,11 @@ func (e *Envelope) validateEncryptionFields() error {
 	case EncryptionModeEdgeEncrypted:
 		// Payload is required at API boundary, encrypted fields optional for downstream
 	case EncryptionModeClientEncrypted:
+		// When using client encryption, reject non-empty plaintext payload
+		// to prevent accidental leakage of unencrypted data
+		if len(e.Payload) > 0 {
+			return errors.New("client encryption mode requires empty plaintext payload")
+		}
 		if !hasEncryptedPayload {
 			return errors.New("client encryption requires encrypted_payload")
 		}
@@ -224,7 +234,7 @@ func (e *Envelope) ToJSON() ([]byte, error) {
 	return json.Marshal(e)
 }
 
-// FromJSON deserializes an envelope from JSON bytes.
+// FromJSON deserializes an envelope from JSON bytes and validates it.
 func FromJSON(data []byte) (*Envelope, error) {
 	var env Envelope
 	if err := json.Unmarshal(data, &env); err != nil {
@@ -233,6 +243,10 @@ func FromJSON(data []byte) (*Envelope, error) {
 
 	if env.Metadata == nil {
 		env.Metadata = make(Metadata)
+	}
+
+	if err := env.Validate(); err != nil {
+		return nil, fmt.Errorf("validation failed: %w", err)
 	}
 
 	return &env, nil
@@ -247,12 +261,12 @@ func GenerateMessageID() string {
 func NewMessage(queueID string, envelope *Envelope, ttl time.Duration) *Message {
 	now := time.Now().UTC()
 	return &Message{
-		ID:         GenerateMessageID(),
-		QueueID:    queueID,
-		Envelope:   envelope,
-		QueuedAt:   now,
-		VisibleAt:  now,
-		ExpiresAt:  now.Add(ttl),
+		ID:        GenerateMessageID(),
+		QueueID:   queueID,
+		Envelope:  envelope,
+		QueuedAt:  now,
+		VisibleAt: now,
+		ExpiresAt: now.Add(ttl),
 	}
 }
 
@@ -269,17 +283,63 @@ func NewMessageWithID(id, queueID string, envelope *Envelope, queuedAt, visibleA
 	}
 }
 
-// ToJSON serializes the message to JSON bytes.
+// Validate checks that the message has all required fields populated and is internally consistent.
+func (m *Message) Validate() error {
+	if m == nil {
+		return errors.New("message is nil")
+	}
+	if m.ID == "" {
+		return errors.New("message ID is required")
+	}
+	if m.QueueID == "" {
+		return errors.New("queue ID is required")
+	}
+	if m.Envelope == nil {
+		return errors.New("envelope is required")
+	}
+	if err := m.Envelope.Validate(); err != nil {
+		return fmt.Errorf("invalid envelope: %w", err)
+	}
+	if m.QueuedAt.IsZero() {
+		return errors.New("queuedAt timestamp is required")
+	}
+	if m.VisibleAt.IsZero() {
+		return errors.New("visibleAt timestamp is required")
+	}
+	if m.ExpiresAt.IsZero() {
+		return errors.New("expiresAt timestamp is required")
+	}
+	if m.VisibleAt.Before(m.QueuedAt) {
+		return errors.New("visibleAt cannot be before queuedAt")
+	}
+	if !m.ExpiresAt.After(m.QueuedAt) {
+		return errors.New("expiresAt must be after queuedAt")
+	}
+	return nil
+}
+
+// ToJSON serializes the message to JSON bytes after validation.
 func (m *Message) ToJSON() ([]byte, error) {
+	if err := m.Validate(); err != nil {
+		return nil, err
+	}
 	return json.Marshal(m)
 }
 
-// MessageFromJSON deserializes a message from JSON bytes.
+// MessageFromJSON deserializes a message from JSON bytes and normalizes the nested Envelope.
 func MessageFromJSON(data []byte) (*Message, error) {
 	var msg Message
 	if err := json.Unmarshal(data, &msg); err != nil {
 		return nil, fmt.Errorf("failed to unmarshal message: %w", err)
 	}
+
+	// Normalize the nested Envelope to ensure invariants (e.g., metadata initialization)
+	if msg.Envelope != nil {
+		if msg.Envelope.Metadata == nil {
+			msg.Envelope.Metadata = make(Metadata)
+		}
+	}
+
 	return &msg, nil
 }
 
@@ -290,5 +350,6 @@ func (m *Message) IsExpired() bool {
 
 // IsVisible checks if the message is available for consumption.
 func (m *Message) IsVisible() bool {
-	return time.Now().UTC().After(m.VisibleAt) || time.Now().UTC().Equal(m.VisibleAt)
+	now := time.Now().UTC()
+	return now.After(m.VisibleAt) || now.Equal(m.VisibleAt)
 }

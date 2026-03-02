@@ -8,7 +8,7 @@ import (
 	"os"
 	"time"
 
-	"github.com/rubyapps/poofmq-go-api/internal/config"
+	"github.com/tortolero-ruben/poofmq/services/go-api/internal/config"
 )
 
 type health struct {

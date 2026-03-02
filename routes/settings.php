@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Settings\ApiKeyController;
 use App\Http\Controllers\Settings\PasswordController;
 use App\Http\Controllers\Settings\ProfileController;
 use App\Http\Controllers\Settings\TwoFactorAuthenticationController;
@@ -25,4 +26,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::get('settings/two-factor', [TwoFactorAuthenticationController::class, 'show'])
         ->name('two-factor.show');
+
+    Route::get('settings/api-keys', [ApiKeyController::class, 'index'])->name('api-keys.index');
+    Route::post('settings/api-keys', [ApiKeyController::class, 'store'])->name('api-keys.store');
+    Route::delete('settings/api-keys/{apiKey}', [ApiKeyController::class, 'destroy'])->name('api-keys.destroy');
 });

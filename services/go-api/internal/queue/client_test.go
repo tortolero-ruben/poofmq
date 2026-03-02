@@ -7,11 +7,10 @@ import (
 	"testing"
 	"time"
 
-	"github.com/rubyapps/poofmq-go-api/internal/testhelpers"
+	"github.com/tortolero-ruben/poofmq/services/go-api/internal/testhelpers"
 )
 
 func TestClient_PushPop(t *testing.T) {
-	t.Parallel()
 
 	suite := testhelpers.SetupRedis(t)
 	t.Cleanup(suite.Cleanup)
@@ -20,12 +19,12 @@ func TestClient_PushPop(t *testing.T) {
 	ctx := context.Background()
 
 	tests := []struct {
-		name       string
-		queueID    string
-		eventType  string
-		payload    map[string]any
-		opts       PushOptions
-		wantErr    bool
+		name      string
+		queueID   string
+		eventType string
+		payload   map[string]any
+		opts      PushOptions
+		wantErr   bool
 	}{
 		{
 			name:      "basic push",
@@ -48,7 +47,7 @@ func TestClient_PushPop(t *testing.T) {
 			queueID:   "test-queue-3",
 			eventType: "task.scheduled",
 			payload:   map[string]any{"task_id": "789"},
-			opts:      PushOptions{AvailableAt: time.Now().Add(5 * time.Minute)},
+			opts:      PushOptions{AvailableAt: time.Now().Add(-1 * time.Second)},
 			wantErr:   false,
 		},
 		{
@@ -113,7 +112,6 @@ func TestClient_PushPop(t *testing.T) {
 }
 
 func TestClient_PopEmptyQueue(t *testing.T) {
-	t.Parallel()
 
 	suite := testhelpers.SetupRedis(t)
 	t.Cleanup(suite.Cleanup)
@@ -128,7 +126,6 @@ func TestClient_PopEmptyQueue(t *testing.T) {
 }
 
 func TestClient_PopDelayedMessage(t *testing.T) {
-	t.Parallel()
 
 	suite := testhelpers.SetupRedis(t)
 	t.Cleanup(suite.Cleanup)
@@ -154,7 +151,6 @@ func TestClient_PopDelayedMessage(t *testing.T) {
 }
 
 func TestClient_PopWithVisibilityTimeout(t *testing.T) {
-	t.Parallel()
 
 	suite := testhelpers.SetupRedis(t)
 	t.Cleanup(suite.Cleanup)
@@ -185,7 +181,6 @@ func TestClient_PopWithVisibilityTimeout(t *testing.T) {
 }
 
 func TestClient_Size(t *testing.T) {
-	t.Parallel()
 
 	suite := testhelpers.SetupRedis(t)
 	t.Cleanup(suite.Cleanup)
@@ -236,7 +231,6 @@ func TestClient_Size(t *testing.T) {
 }
 
 func TestClient_Clear(t *testing.T) {
-	t.Parallel()
 
 	suite := testhelpers.SetupRedis(t)
 	t.Cleanup(suite.Cleanup)
@@ -270,7 +264,6 @@ func TestClient_Clear(t *testing.T) {
 }
 
 func TestClient_FIFOOrder(t *testing.T) {
-	t.Parallel()
 
 	suite := testhelpers.SetupRedis(t)
 	t.Cleanup(suite.Cleanup)
@@ -302,7 +295,6 @@ func TestClient_FIFOOrder(t *testing.T) {
 }
 
 func TestClient_ConcurrentOperations(t *testing.T) {
-	t.Parallel()
 
 	suite := testhelpers.SetupRedis(t)
 	t.Cleanup(suite.Cleanup)
@@ -358,7 +350,6 @@ func TestClient_ConcurrentOperations(t *testing.T) {
 }
 
 func TestClient_TTLPolicy(t *testing.T) {
-	t.Parallel()
 
 	suite := testhelpers.SetupRedis(t)
 	t.Cleanup(suite.Cleanup)
@@ -435,7 +426,6 @@ func TestClient_TTLPolicy(t *testing.T) {
 }
 
 func TestClient_ExpiredMessage(t *testing.T) {
-	t.Parallel()
 
 	suite := testhelpers.SetupRedis(t)
 	t.Cleanup(suite.Cleanup)
@@ -467,7 +457,6 @@ func TestClient_ExpiredMessage(t *testing.T) {
 }
 
 func TestClient_TTLAlwaysEnforcedOnPush(t *testing.T) {
-	t.Parallel()
 
 	suite := testhelpers.SetupRedis(t)
 	t.Cleanup(suite.Cleanup)
@@ -476,32 +465,32 @@ func TestClient_TTLAlwaysEnforcedOnPush(t *testing.T) {
 	ctx := context.Background()
 
 	tests := []struct {
-		name        string
-		queueID     string
-		ttlSeconds  *int32
-		wantMinTTL  time.Duration // minimum expected TTL on the key
-		wantMaxTTL  time.Duration // maximum expected TTL on the key
+		name       string
+		queueID    string
+		ttlSeconds *int32
+		wantMinTTL time.Duration // minimum expected TTL on the key
+		wantMaxTTL time.Duration // maximum expected TTL on the key
 	}{
 		{
-			name:        "default TTL enforced",
-			queueID:     "ttl-default",
-			ttlSeconds:  nil,
-			wantMinTTL:  time.Duration(DefaultTTLSeconds) * time.Second,
-			wantMaxTTL:  time.Duration(DefaultTTLSeconds+QueueKeyBufferTTL+10) * time.Second, // +10 for timing slack
+			name:       "default TTL enforced",
+			queueID:    "ttl-default",
+			ttlSeconds: nil,
+			wantMinTTL: time.Duration(DefaultTTLSeconds) * time.Second,
+			wantMaxTTL: time.Duration(DefaultTTLSeconds+QueueKeyBufferTTL+10) * time.Second, // +10 for timing slack
 		},
 		{
-			name:        "custom TTL enforced",
-			queueID:     "ttl-custom",
-			ttlSeconds:  ptrInt32(3600),
-			wantMinTTL:  3600 * time.Second,
-			wantMaxTTL:  (3600 + QueueKeyBufferTTL + 10) * time.Second,
+			name:       "custom TTL enforced",
+			queueID:    "ttl-custom",
+			ttlSeconds: ptrInt32(3600),
+			wantMinTTL: 3600 * time.Second,
+			wantMaxTTL: (3600 + QueueKeyBufferTTL + 10) * time.Second,
 		},
 		{
-			name:        "minimum TTL enforced",
-			queueID:     "ttl-min",
-			ttlSeconds:  ptrInt32(1),
-			wantMinTTL:  1 * time.Second,
-			wantMaxTTL:  (1 + QueueKeyBufferTTL + 10) * time.Second,
+			name:       "minimum TTL enforced",
+			queueID:    "ttl-min",
+			ttlSeconds: ptrInt32(1),
+			wantMinTTL: 1 * time.Second,
+			wantMaxTTL: (1 + QueueKeyBufferTTL + 10) * time.Second,
 		},
 	}
 
@@ -538,7 +527,6 @@ func TestClient_TTLAlwaysEnforcedOnPush(t *testing.T) {
 }
 
 func TestClient_TTLTooLow(t *testing.T) {
-	t.Parallel()
 
 	suite := testhelpers.SetupRedis(t)
 	t.Cleanup(suite.Cleanup)
@@ -561,7 +549,6 @@ func TestClient_TTLTooLow(t *testing.T) {
 }
 
 func TestClient_TTLTooHigh(t *testing.T) {
-	t.Parallel()
 
 	suite := testhelpers.SetupRedis(t)
 	t.Cleanup(suite.Cleanup)
@@ -584,7 +571,6 @@ func TestClient_TTLTooHigh(t *testing.T) {
 }
 
 func TestClient_CustomTTLPolicy(t *testing.T) {
-	t.Parallel()
 
 	suite := testhelpers.SetupRedis(t)
 	t.Cleanup(suite.Cleanup)

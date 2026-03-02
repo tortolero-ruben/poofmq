@@ -21,15 +21,16 @@ var (
 
 // TTL constants for queue messages
 const (
-	DefaultTTLSeconds = 86400       // 24 hours default
-	MaxTTLSeconds     = 604800      // 7 days maximum
-	MinTTLSeconds     = 1           // 1 second minimum
-	QueueKeyBufferTTL = 3600        // 1 hour buffer added to queue key TTL
+	DefaultTTLSeconds = 86400  // 24 hours default
+	MaxTTLSeconds     = 604800 // 7 days maximum
+	MinTTLSeconds     = 1      // 1 second minimum
+	QueueKeyBufferTTL = 3600   // 1 hour buffer added to queue key TTL
 )
 
 // atomicPopScript is a Lua script that atomically pops a message from a queue.
-// This ensures exactly-once delivery semantics: the message is removed atomically
-// and only one consumer can receive it. No race conditions between consumers.
+// This provides atomic at-most-once delivery semantics: the message is removed
+// atomically and at most one consumer can receive it. If a consumer fails after
+// popping, the message is permanently lost (no ack/nack or redelivery mechanism).
 // The script returns nil if the queue is empty, otherwise returns the message data.
 var atomicPopScript = redis.NewScript(`
 	local queueKey = KEYS[1]
@@ -42,31 +43,40 @@ var atomicPopScript = redis.NewScript(`
 
 // Message represents a queue message with metadata.
 type Message struct {
-	ID             string                 `json:"id"`
-	QueueID        string                 `json:"queue_id"`
-	EventType      string                 `json:"event_type"`
-	Payload        map[string]any         `json:"payload"`
-	Metadata       map[string]string      `json:"metadata,omitempty"`
-	QueuedAt       time.Time              `json:"queued_at"`
-	VisibleAt      time.Time              `json:"visible_at"`
-	ExpiresAt      time.Time              `json:"expires_at"`
-	ReceiptHandle  string                 `json:"receipt_handle,omitempty"`
-	TTLSeconds     int                    `json:"ttl_seconds,omitempty"`
+	ID            string            `json:"id"`
+	QueueID       string            `json:"queue_id"`
+	EventType     string            `json:"event_type"`
+	Payload       map[string]any    `json:"payload"`
+	Metadata      map[string]string `json:"metadata,omitempty"`
+	QueuedAt      time.Time         `json:"queued_at"`
+	VisibleAt     time.Time         `json:"visible_at"`
+	ExpiresAt     time.Time         `json:"expires_at"`
+	ReceiptHandle string            `json:"receipt_handle,omitempty"`
+	TTLSeconds    int               `json:"ttl_seconds,omitempty"`
 }
 
 // PushOptions configures the push operation.
 type PushOptions struct {
-	// TTLSeconds is optional; if nil or 0, default TTL is applied.
-	// Values are validated against TTLPolicy (min/max bounds).
-	TTLSeconds   *int32
-	AvailableAt  time.Time
+	// TTLSeconds is optional; if nil, the default TTL is applied.
+	// If set, the value is validated against TTLPolicy (min/max bounds).
+	// Note: 0 is not valid and will be rejected (use nil for default).
+	TTLSeconds  *int32
+	AvailableAt time.Time
 }
 
 // PopOptions configures the pop operation.
+// Note: Currently, only VisibilityTimeoutSeconds is used to affect delivery
+// semantics in Pop. WaitTimeoutSeconds and ConsumerID are reserved for future
+// use and have no effect on message delivery at this time.
 type PopOptions struct {
 	VisibilityTimeoutSeconds int
-	WaitTimeoutSeconds       int
-	ConsumerID               string
+	// Deprecated: WaitTimeoutSeconds is currently ignored by Pop and does not
+	// affect message delivery behavior. It is reserved for future use.
+	WaitTimeoutSeconds int
+	// Deprecated: ConsumerID is currently only used for non-delivery-related
+	// metadata and does not affect which messages are delivered to a consumer.
+	// It is reserved for future use with consumer-specific semantics.
+	ConsumerID string
 }
 
 // TTLPolicy defines the TTL constraints for queue messages.
@@ -108,7 +118,7 @@ func (p TTLPolicy) Validate(requestedTTL *int32) (int, error) {
 
 // Client provides queue operations backed by Redis.
 type Client struct {
-	redis    *redis.Client
+	redis     *redis.Client
 	ttlPolicy TTLPolicy
 }
 
@@ -165,22 +175,22 @@ func (c *Client) Push(ctx context.Context, queueID string, eventType string, pay
 	queueKey := c.queueKey(queueID)
 	queueKeyTTL := time.Duration(ttl+QueueKeyBufferTTL) * time.Second
 
-	// Use atomic transaction to ensure both LPUSH and EXPIRE succeed together
-	// This guarantees TTL is ALWAYS set on every write operation
-	err = c.redis.Watch(ctx, func(tx *redis.Tx) error {
+	// Use TxPipelined so both operations run in a single MULTI/EXEC transaction.
+	// This guarantees TTL is ALWAYS set on every write operation.
+	_, err = c.redis.TxPipelined(ctx, func(pipe redis.Pipeliner) error {
 		// Push to the queue (LPUSH for FIFO semantics when combined with RPOP)
-		if err := tx.LPush(ctx, queueKey, data).Err(); err != nil {
+		if err := pipe.LPush(ctx, queueKey, data).Err(); err != nil {
 			return fmt.Errorf("failed to push message to queue: %w", err)
 		}
 
 		// CRITICAL: Always enforce EXPIRE on the queue key
 		// This is the core TTL enforcement - no write can happen without expiry
-		if err := tx.Expire(ctx, queueKey, queueKeyTTL).Err(); err != nil {
+		if err := pipe.Expire(ctx, queueKey, queueKeyTTL).Err(); err != nil {
 			return fmt.Errorf("failed to set TTL on queue: %w", err)
 		}
 
 		return nil
-	}, queueKey)
+	})
 
 	if err != nil {
 		return nil, err
@@ -190,60 +200,75 @@ func (c *Client) Push(ctx context.Context, queueID string, eventType string, pay
 }
 
 // Pop atomically retrieves and removes a message from the queue.
-// This implements one-and-done semantics using a Redis Lua script for atomicity.
-// Only one consumer will receive each message - no duplicates possible.
+// This implements at-most-once delivery semantics using a Redis Lua script for atomicity:
+// each enqueued message will be popped by at most one consumer, but messages can be lost
+// if a consumer crashes after popping and before completing processing.
 func (c *Client) Pop(ctx context.Context, queueID string, opts PopOptions) (*Message, error) {
 	queueKey := c.queueKey(queueID)
 
-	// Execute atomic pop using Lua script
-	// This ensures exactly-once delivery: the message is removed atomically
-	// and only one consumer can receive it
-	result, err := atomicPopScript.Run(ctx, c.redis, []string{queueKey}).Result()
-	if err != nil {
-		return nil, fmt.Errorf("failed to pop message: %w", err)
-	}
-
-	// Empty queue - return nil message (not an error)
-	if result == nil {
-		return nil, ErrQueueEmpty
-	}
-
-	// Deserialize message
-	msgData, ok := result.(string)
-	if !ok {
-		return nil, ErrInvalidMessage
-	}
-
-	var msg Message
-	if err := json.Unmarshal([]byte(msgData), &msg); err != nil {
-		return nil, ErrInvalidMessage
-	}
-
-	// Check if message has expired
-	if time.Now().UTC().After(msg.ExpiresAt) {
-		// Message expired, try to pop another one recursively
-		return c.Pop(ctx, queueID, opts)
-	}
-
-	// Check if message is visible
-	if time.Now().UTC().Before(msg.VisibleAt) {
-		// Message not yet visible, re-push to queue for later processing
-		// with TTL enforcement maintained
-		if err := c.repushWithTTL(ctx, queueKey, &msg); err != nil {
-			return nil, fmt.Errorf("failed to re-push invisible message: %w", err)
+	// Use iterative loop with bounded attempts to avoid stack overflow
+	const maxAttempts = 100
+	for attempt := 0; attempt < maxAttempts; attempt++ {
+		// Execute atomic pop using Lua script
+		// This ensures atomic delivery: the message is removed atomically
+		// and only one consumer can receive it
+		result, err := atomicPopScript.Run(ctx, c.redis, []string{queueKey}).Result()
+		if err != nil {
+			if errors.Is(err, redis.Nil) {
+				return nil, ErrQueueEmpty
+			}
+			return nil, fmt.Errorf("failed to pop message: %w", err)
 		}
-		return c.Pop(ctx, queueID, opts)
+
+		// Empty queue - return nil message (not an error)
+		if result == nil {
+			return nil, ErrQueueEmpty
+		}
+
+		// Deserialize message
+		msgData, ok := result.(string)
+		if !ok {
+			return nil, ErrInvalidMessage
+		}
+
+		var msg Message
+		if err := json.Unmarshal([]byte(msgData), &msg); err != nil {
+			return nil, ErrInvalidMessage
+		}
+
+		now := time.Now().UTC()
+
+		// Check if message has expired
+		if now.After(msg.ExpiresAt) {
+			// Message expired, discard and try to pop another one iteratively
+			continue
+		}
+
+		// Check if message is visible
+		if now.Before(msg.VisibleAt) {
+			// Message not yet visible, re-push to queue for later processing
+			// with TTL enforcement maintained
+			if err := c.repushWithTTL(ctx, queueKey, &msg); err != nil {
+				return nil, fmt.Errorf("failed to re-push invisible message: %w", err)
+			}
+			// Behave like an empty queue until the message becomes visible
+			return nil, ErrQueueEmpty
+		}
+
+		// Generate receipt handle for this pop operation
+		msg.ReceiptHandle = uuid.New().String()
+
+		// Store receipt handle for visibility timeout tracking if specified
+		if opts.VisibilityTimeoutSeconds > 0 {
+			if err := c.redis.Set(ctx, c.receiptKey(queueID, msg.ReceiptHandle), msg.ID, time.Duration(opts.VisibilityTimeoutSeconds)*time.Second).Err(); err != nil {
+				return nil, fmt.Errorf("failed to store receipt handle: %w", err)
+			}
+		}
+
+		return &msg, nil
 	}
 
-	// Generate receipt handle for this pop operation
-	msg.ReceiptHandle = uuid.New().String()
-
-	// Store receipt handle for visibility timeout tracking if specified
-	if opts.VisibilityTimeoutSeconds > 0 {
-		c.redis.Set(ctx, c.receiptKey(queueID, msg.ReceiptHandle), msg.ID, time.Duration(opts.VisibilityTimeoutSeconds)*time.Second)
-	}
-
-	return &msg, nil
+	return nil, fmt.Errorf("exceeded maximum pop attempts (%d), queue may be in an inconsistent state", maxAttempts)
 }
 
 // repushWithTTL re-pushes a message to the queue while maintaining TTL enforcement.
@@ -261,22 +286,26 @@ func (c *Client) repushWithTTL(ctx context.Context, queueKey string, msg *Messag
 		return nil
 	}
 
-	// Add buffer to queue key TTL to ensure messages don't expire before processing
-	queueKeyTTL := remainingTTL + QueueKeyBufferTTL
+	// Add buffer to queue key TTL to ensure messages don't expire before processing.
+	// QueueKeyBufferTTL is defined in seconds, so convert it to a time.Duration.
+	buffer := time.Duration(QueueKeyBufferTTL) * time.Second
+	queueKeyTTL := remainingTTL + buffer
 
-	// Use atomic transaction to ensure both LPUSH and EXPIRE succeed
-	return c.redis.Watch(ctx, func(tx *redis.Tx) error {
-		if err := tx.LPush(ctx, queueKey, data).Err(); err != nil {
+	// Use TxPipelined so both operations run in a single MULTI/EXEC transaction.
+	_, err = c.redis.TxPipelined(ctx, func(pipe redis.Pipeliner) error {
+		if err := pipe.LPush(ctx, queueKey, data).Err(); err != nil {
 			return fmt.Errorf("failed to re-push message: %w", err)
 		}
 
 		// CRITICAL: Always enforce EXPIRE on re-push operations
-		if err := tx.Expire(ctx, queueKey, queueKeyTTL).Err(); err != nil {
+		if err := pipe.Expire(ctx, queueKey, queueKeyTTL).Err(); err != nil {
 			return fmt.Errorf("failed to set TTL on queue: %w", err)
 		}
 
 		return nil
-	}, queueKey)
+	})
+
+	return err
 }
 
 // Size returns the number of messages in the queue.

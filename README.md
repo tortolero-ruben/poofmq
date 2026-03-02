@@ -98,6 +98,46 @@ Cloudflare target mapping:
 
 These mappings are also defined in [`config/topology.php`](config/topology.php) under `deployment_targets`.
 
+## Deploying the Laravel Portal to Railway
+
+The portal is set up for Railway’s “majestic monolith” pattern: one repo, multiple services (web, worker, cron).
+
+**Prerequisites:** Railway project with **PostgreSQL** and **Redis** (add from the Railway dashboard).
+
+**1. App service (HTTP)**  
+- Source: this repo (root).  
+- **Build:** set *Custom Build Command* to `npm run build`.  
+- **Deploy:** set *Pre-Deploy Command* to `chmod +x ./railway/init-app.sh && ./railway/init-app.sh`.  
+- **Variables:** all portal env vars (see below). Use `DB_URL` = `${{Postgres.DATABASE_URL}}` and Redis vars from the Redis plugin (`REDIS_URL` or `REDIS_HOST`/`REDIS_PORT`/`REDIS_PASSWORD`).  
+- Generate a **public domain** in Networking.
+
+**2. Worker service (queue)**  
+- Same repo. No custom build.  
+- **Start Command:** `chmod +x ./railway/run-worker.sh && ./railway/run-worker.sh`.  
+- **Variables:** same as App service (same env set).
+
+**3. Cron service (scheduler)**  
+- Same repo. No custom build.  
+- **Start Command:** `chmod +x ./railway/run-cron.sh && ./railway/run-cron.sh`.  
+- **Variables:** same as App service.
+
+**Required / important variables for production**
+
+- `APP_KEY` — from `php artisan key:generate`.  
+- `APP_ENV=production`, `APP_DEBUG=false`, `APP_URL` — your public portal URL (e.g. `https://your-app.up.railway.app`).  
+- `DB_CONNECTION=pgsql`, `DB_URL` — `${{Postgres.DATABASE_URL}}`.  
+- `REDIS_HOST` / `REDIS_PORT` / `REDIS_PASSWORD` (or `REDIS_URL` if you parse it) from Railway Redis.  
+- `QUEUE_CONNECTION=redis`, `CACHE_STORE=redis`.  
+- `SESSION_SECURE_COOKIE=true` (Railway serves over HTTPS).  
+- `LOG_CHANNEL=stderr`, `LOG_STDERR_FORMATTER=\Monolog\Formatter\JsonFormatter` (optional; for Railway log aggregation).  
+- Optional: `RAILWAY_API_TOKEN`, `RAILWAY_PROJECT_ID` (for dashboard billing/runway).  
+- Optional: `CLOUDFLARE_TURNSTILE_SITE_KEY`, `CLOUDFLARE_TURNSTILE_SECRET_KEY` (for Sandbox).  
+- Optional: `GO_API_BASE_URL` (if you deploy the Go API elsewhere and point the portal at it).
+
+Scripts used: [`railway/init-app.sh`](railway/init-app.sh) (migrate), [`railway/run-worker.sh`](railway/run-worker.sh) (queue worker), [`railway/run-cron.sh`](railway/run-cron.sh) (scheduler). See [Railway’s Laravel guide](https://docs.railway.app/guides/laravel) for more detail.
+
+**Railway MCP:** If you use the Railway MCP in Cursor (e.g. `check-railway-status`, `list-projects`, `list-services`, `deploy`, `set-variables`, `generate-domain`), install the [Railway CLI](https://docs.railway.com/guides/cli) and run `railway login` and `railway link` in this repo so the MCP can talk to your project.
+
 ## Quickstart and SDKs
 
 See [docs/quickstart.md](docs/quickstart.md) for API base URL, Node.js and Python SDK install and usage. The portal **Developers** page (when logged in) links to in-repo quickstart and SDK docs.

@@ -1,9 +1,5 @@
 {
   "$schema": "https://schema.railpack.com",
-  "provider": "php",
-  "packages": {
-    "php": "8.4"
-  },
   "deploy": {
     "variables": {
       "RAILPACK_PHP_ROOT_DIR": "/app/public",

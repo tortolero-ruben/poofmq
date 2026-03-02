@@ -7,6 +7,7 @@ import (
 	"time"
 
 	poofmqv1 "github.com/tortolero-ruben/poofmq/gen/go/poofmq"
+	"github.com/tortolero-ruben/poofmq/services/go-api/internal/metrics"
 	"github.com/tortolero-ruben/poofmq/services/go-api/internal/queue"
 	"github.com/tortolero-ruben/poofmq/services/go-api/internal/validation"
 	"google.golang.org/grpc/codes"
@@ -29,7 +30,12 @@ func NewQueueServiceServer(queueClient *queue.Client) *QueueServiceServer {
 }
 
 // Push handles the PushMessage gRPC call to enqueue a message.
-func (s *QueueServiceServer) Push(ctx context.Context, req *poofmqv1.PushMessageRequest) (*poofmqv1.PushMessageResponse, error) {
+func (s *QueueServiceServer) Push(ctx context.Context, req *poofmqv1.PushMessageRequest) (response *poofmqv1.PushMessageResponse, err error) {
+	startedAt := time.Now().UTC()
+	defer func() {
+		metrics.RecordPush(time.Since(startedAt), err != nil)
+	}()
+
 	// Validate the request
 	if err := validation.ValidatePushRequest(req); err != nil {
 		return nil, status.Errorf(codes.InvalidArgument, "invalid request: %v", err)
@@ -54,14 +60,14 @@ func (s *QueueServiceServer) Push(ctx context.Context, req *poofmqv1.PushMessage
 	}
 
 	// Push to queue
-	msg, err := s.queueClient.Push(ctx, req.GetQueueId(), envelope.GetEventType(), payload, opts)
-	if err != nil {
+	msg, pushErr := s.queueClient.Push(ctx, req.GetQueueId(), envelope.GetEventType(), payload, opts)
+	if pushErr != nil {
 		// Map TTL policy violations to InvalidArgument to reflect client input errors.
 		code := codes.Internal
-		if errors.Is(err, queue.ErrTTLTooLow) || errors.Is(err, queue.ErrTTLTooHigh) {
+		if errors.Is(pushErr, queue.ErrTTLTooLow) || errors.Is(pushErr, queue.ErrTTLTooHigh) {
 			code = codes.InvalidArgument
 		}
-		return nil, status.Errorf(code, "failed to push message: %v", err)
+		return nil, status.Errorf(code, "failed to push message: %v", pushErr)
 	}
 
 	return &poofmqv1.PushMessageResponse{
@@ -74,7 +80,12 @@ func (s *QueueServiceServer) Push(ctx context.Context, req *poofmqv1.PushMessage
 // Pop handles the PopMessage gRPC call to dequeue a message atomically.
 // This implements at-most-once delivery semantics - each message is delivered to
 // at most one consumer, but messages can be lost if a consumer fails after popping.
-func (s *QueueServiceServer) Pop(ctx context.Context, req *poofmqv1.PopMessageRequest) (*poofmqv1.PopMessageResponse, error) {
+func (s *QueueServiceServer) Pop(ctx context.Context, req *poofmqv1.PopMessageRequest) (response *poofmqv1.PopMessageResponse, err error) {
+	startedAt := time.Now().UTC()
+	defer func() {
+		metrics.RecordPop(time.Since(startedAt), err != nil)
+	}()
+
 	// Validate the request
 	if err := validation.ValidatePopRequest(req); err != nil {
 		return nil, status.Errorf(codes.InvalidArgument, "invalid request: %v", err)
@@ -88,15 +99,15 @@ func (s *QueueServiceServer) Pop(ctx context.Context, req *poofmqv1.PopMessageRe
 	}
 
 	// Pop from queue atomically
-	msg, err := s.queueClient.Pop(ctx, req.GetQueueId(), opts)
-	if err != nil {
-		if errors.Is(err, queue.ErrQueueEmpty) {
+	msg, popErr := s.queueClient.Pop(ctx, req.GetQueueId(), opts)
+	if popErr != nil {
+		if errors.Is(popErr, queue.ErrQueueEmpty) {
 			// Empty queue is not an error - return nil message
 			return &poofmqv1.PopMessageResponse{
 				Message: nil,
 			}, nil
 		}
-		return nil, status.Errorf(codes.Internal, "failed to pop message: %v", err)
+		return nil, status.Errorf(codes.Internal, "failed to pop message: %v", popErr)
 	}
 
 	// Convert payload to protobuf struct

@@ -40,10 +40,21 @@ return [
         'timeout_seconds' => (int) env('GO_API_TIMEOUT_SECONDS', 5),
     ],
 
+    'railway' => [
+        'api_token' => env('RAILWAY_API_TOKEN'),
+        'project_id' => env('RAILWAY_PROJECT_ID'),
+        'billing_endpoint' => env('RAILWAY_BILLING_ENDPOINT', 'https://railway.app/api/v1/billing/summary'),
+        'timeout_seconds' => (int) env('RAILWAY_API_TIMEOUT_SECONDS', 10),
+    ],
+
     'turnstile' => [
         'site_key' => env('CLOUDFLARE_TURNSTILE_SITE_KEY'),
         'secret_key' => env('CLOUDFLARE_TURNSTILE_SECRET_KEY'),
         'verify_url' => 'https://challenges.cloudflare.com/turnstile/v0/siteverify',
+    ],
+
+    'donations' => [
+        'webhook_secret' => env('DONATION_WEBHOOK_SECRET'),
     ],
 
 ];

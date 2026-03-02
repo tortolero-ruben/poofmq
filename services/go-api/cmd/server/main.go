@@ -7,6 +7,7 @@ import (
 	"net"
 	"net/http"
 	"os"
+	"strconv"
 	"strings"
 	"time"
 
@@ -14,6 +15,7 @@ import (
 	"github.com/redis/go-redis/v9"
 	poofmqv1 "github.com/tortolero-ruben/poofmq/gen/go/poofmq"
 	"github.com/tortolero-ruben/poofmq/services/go-api/internal/config"
+	"github.com/tortolero-ruben/poofmq/services/go-api/internal/metrics"
 	"github.com/tortolero-ruben/poofmq/services/go-api/internal/queue"
 	"github.com/tortolero-ruben/poofmq/services/go-api/internal/service"
 	"google.golang.org/grpc"
@@ -114,6 +116,27 @@ func main() {
 		_, _ = writer.Write([]byte("poofmq go api"))
 	})
 
+	// Metrics endpoint
+	httpMux.HandleFunc("/metrics", func(writer http.ResponseWriter, request *http.Request) {
+		snapshot := metrics.SnapshotMetrics()
+		redisMemoryBytes := redisUsedMemoryBytes(context.Background(), rdb)
+
+		payload := map[string]any{
+			"push_total":          snapshot.PushTotal,
+			"push_errors_total":   snapshot.PushErrorsTotal,
+			"pop_total":           snapshot.PopTotal,
+			"pop_errors_total":    snapshot.PopErrorsTotal,
+			"avg_push_latency_ms": snapshot.AvgPushLatency,
+			"avg_pop_latency_ms":  snapshot.AvgPopLatency,
+			"redis_memory_bytes":  redisMemoryBytes,
+		}
+
+		writer.Header().Set("Content-Type", "application/json")
+		if err := json.NewEncoder(writer).Encode(payload); err != nil {
+			writer.WriteHeader(http.StatusInternalServerError)
+		}
+	})
+
 	// Combine handlers - gRPC-Gateway handles /v1/* paths, httpMux handles others
 	handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// Route gRPC-Gateway paths
@@ -157,4 +180,31 @@ func envOrDefault(key string, fallback string) string {
 	}
 
 	return value
+}
+
+func redisUsedMemoryBytes(ctx context.Context, rdb *redis.Client) int64 {
+	info, err := rdb.Info(ctx, "memory").Result()
+	if err != nil {
+		return 0
+	}
+
+	return parseRedisUsedMemory(info)
+}
+
+func parseRedisUsedMemory(info string) int64 {
+	for _, line := range strings.Split(info, "\n") {
+		if !strings.HasPrefix(line, "used_memory:") {
+			continue
+		}
+
+		value := strings.TrimSpace(strings.TrimPrefix(line, "used_memory:"))
+		parsed, parseErr := strconv.ParseInt(value, 10, 64)
+		if parseErr != nil {
+			return 0
+		}
+
+		return parsed
+	}
+
+	return 0
 }

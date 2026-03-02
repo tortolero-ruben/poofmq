@@ -71,6 +71,9 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v6
 
+      - name: Verify SDK generation
+        run: make sdk-generate
+
       - name: Set up Python
         uses: actions/setup-python@v5
         with:

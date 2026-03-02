@@ -16,6 +16,7 @@
   "keywords": ["poofmq", "queue", "api", "sdk"],
   "license": "MIT",
   "devDependencies": {
+    "@types/node": "^22.13.5",
     "typescript": "^5.7.2"
   }
 }

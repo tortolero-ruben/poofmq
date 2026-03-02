@@ -56,7 +56,12 @@ func (s *QueueServiceServer) Push(ctx context.Context, req *poofmqv1.PushMessage
 	// Push to queue
 	msg, err := s.queueClient.Push(ctx, req.GetQueueId(), envelope.GetEventType(), payload, opts)
 	if err != nil {
-		return nil, status.Errorf(codes.Internal, "failed to push message: %v", err)
+		// Map TTL policy violations to InvalidArgument to reflect client input errors.
+		code := codes.Internal
+		if errors.Is(err, queue.ErrTTLTooLow) || errors.Is(err, queue.ErrTTLTooHigh) {
+			code = codes.InvalidArgument
+		}
+		return nil, status.Errorf(code, "failed to push message: %v", err)
 	}
 
 	return &poofmqv1.PushMessageResponse{
@@ -67,7 +72,8 @@ func (s *QueueServiceServer) Push(ctx context.Context, req *poofmqv1.PushMessage
 }
 
 // Pop handles the PopMessage gRPC call to dequeue a message atomically.
-// This implements one-and-done semantics - each message is delivered exactly once.
+// This implements at-most-once delivery semantics - each message is delivered to
+// at most one consumer, but messages can be lost if a consumer fails after popping.
 func (s *QueueServiceServer) Pop(ctx context.Context, req *poofmqv1.PopMessageRequest) (*poofmqv1.PopMessageResponse, error) {
 	// Validate the request
 	if err := validation.ValidatePopRequest(req); err != nil {

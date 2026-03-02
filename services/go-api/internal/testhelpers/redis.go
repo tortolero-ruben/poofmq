@@ -84,18 +84,22 @@ func (s *RedisTestSuite) Cleanup() {
 
 	// Flush all keys in the test database
 	if err := s.Client.FlushDB(ctx).Err(); err != nil {
-		s.TB.Logf("warning: failed to flush test database: %v", err)
+		if s.TB != nil {
+			s.TB.Logf("warning: failed to flush test database: %v", err)
+		}
 	}
 
 	if err := s.Client.Close(); err != nil {
-		s.TB.Logf("warning: failed to close Redis client: %v", err)
+		if s.TB != nil {
+			s.TB.Logf("warning: failed to close Redis client: %v", err)
+		}
 	}
 }
 
-// FlushQueue removes all keys matching a queue pattern.
+// FlushQueue removes the primary Redis key for the given queue.
 func (s *RedisTestSuite) FlushQueue(ctx context.Context, queueID string) error {
-	pattern := fmt.Sprintf("poofmq:queue:%s", queueID)
-	return s.Client.Del(ctx, pattern).Err()
+	key := fmt.Sprintf("poofmq:queue:%s", queueID)
+	return s.Client.Del(ctx, key).Err()
 }
 
 // SkipIfNoRedis skips the test if Redis is not available.

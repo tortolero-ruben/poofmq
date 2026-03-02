@@ -35,9 +35,10 @@ func ValidatePushRequest(req *poofmqv1.PushMessageRequest) error {
 		return fmt.Errorf("envelope.payload is required")
 	}
 
-	// Validate TTL if specified (must be positive if set)
-	if req.TtlSeconds != nil && req.GetTtlSeconds() < 0 {
-		return fmt.Errorf("ttl_seconds must be non-negative when specified")
+	// Validate TTL if specified (must be at least 1 second if set)
+	// Note: 0 is not valid - use nil to get the default TTL
+	if req.TtlSeconds != nil && req.GetTtlSeconds() <= 0 {
+		return fmt.Errorf("ttl_seconds must be at least 1 second when specified")
 	}
 
 	return nil

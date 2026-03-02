@@ -40,4 +40,10 @@ return [
         'timeout_seconds' => (int) env('GO_API_TIMEOUT_SECONDS', 5),
     ],
 
+    'turnstile' => [
+        'site_key' => env('CLOUDFLARE_TURNSTILE_SITE_KEY'),
+        'secret_key' => env('CLOUDFLARE_TURNSTILE_SECRET_KEY'),
+        'verify_url' => 'https://challenges.cloudflare.com/turnstile/v0/siteverify',
+    ],
+
 ];

@@ -214,6 +214,9 @@ func (c *Client) Pop(ctx context.Context, queueID string, opts PopOptions) (*Mes
 		// and only one consumer can receive it
 		result, err := atomicPopScript.Run(ctx, c.redis, []string{queueKey}).Result()
 		if err != nil {
+			if errors.Is(err, redis.Nil) {
+				return nil, ErrQueueEmpty
+			}
 			return nil, fmt.Errorf("failed to pop message: %w", err)
 		}
 

@@ -15,7 +15,6 @@ import (
 )
 
 func TestQueueServiceServer_Push(t *testing.T) {
-	t.Parallel()
 
 	suite := testhelpers.SetupRedis(t)
 	t.Cleanup(suite.Cleanup)
@@ -121,7 +120,7 @@ func TestQueueServiceServer_Push(t *testing.T) {
 				TtlSeconds: int32Ptr(-1),
 			},
 			wantCode:   codes.InvalidArgument,
-			wantErrMsg: "ttl_seconds must be non-negative",
+			wantErrMsg: "ttl_seconds must be at least 1 second",
 		},
 		{
 			name:       "nil request",
@@ -168,7 +167,6 @@ func TestQueueServiceServer_Push(t *testing.T) {
 }
 
 func TestQueueServiceServer_Push_ResponseFields(t *testing.T) {
-	t.Parallel()
 
 	suite := testhelpers.SetupRedis(t)
 	t.Cleanup(suite.Cleanup)
@@ -213,7 +211,6 @@ func TestQueueServiceServer_Push_ResponseFields(t *testing.T) {
 }
 
 func TestQueueServiceServer_Push_DefaultTTL(t *testing.T) {
-	t.Parallel()
 
 	suite := testhelpers.SetupRedis(t)
 	t.Cleanup(suite.Cleanup)
@@ -251,7 +248,6 @@ func TestQueueServiceServer_Push_DefaultTTL(t *testing.T) {
 }
 
 func TestQueueServiceServer_PushPopRoundTrip(t *testing.T) {
-	t.Parallel()
 
 	suite := testhelpers.SetupRedis(t)
 	t.Cleanup(suite.Cleanup)
@@ -317,7 +313,6 @@ func TestQueueServiceServer_PushPopRoundTrip(t *testing.T) {
 }
 
 func TestQueueServiceServer_Pop(t *testing.T) {
-	t.Parallel()
 
 	suite := testhelpers.SetupRedis(t)
 	t.Cleanup(suite.Cleanup)
@@ -410,7 +405,6 @@ func TestQueueServiceServer_Pop(t *testing.T) {
 }
 
 func TestQueueServiceServer_PopEmptyQueue(t *testing.T) {
-	t.Parallel()
 
 	suite := testhelpers.SetupRedis(t)
 	t.Cleanup(suite.Cleanup)

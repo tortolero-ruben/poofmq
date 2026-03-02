@@ -67,7 +67,8 @@ func SetupRedis(tb *testing.T) *RedisTestSuite {
 	defer cancel()
 
 	if err := client.Ping(ctx).Err(); err != nil {
-		tb.Fatalf("failed to connect to Redis at %s: %v", cfg.Address(), err)
+		_ = client.Close()
+		tb.Skipf("Redis not available at %s: %v", cfg.Address(), err)
 	}
 
 	return &RedisTestSuite{

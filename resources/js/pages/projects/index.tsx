@@ -8,13 +8,13 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import AppLayout from '@/layouts/app-layout';
 import { jsonHeaders } from '@/lib/utils';
+import type { BreadcrumbItem } from '@/types';
 import {
     destroy as destroyProject,
     index as projectsIndex,
     store as storeProject,
     update as updateProject,
 } from '@/routes/projects';
-import type { BreadcrumbItem } from '@/types';
 
 type Project = {
     id: string;

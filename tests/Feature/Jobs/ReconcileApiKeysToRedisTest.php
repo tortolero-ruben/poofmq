@@ -31,6 +31,7 @@ test('reconciliation syncs active api keys to redis', function () {
             expect($decoded)->toBe([
                 'key_hash' => $activeKey->key_hash,
                 'user_id' => $activeKey->user_id,
+                'project_id' => null,
                 'expires_at' => null,
             ]);
 
@@ -40,13 +41,9 @@ test('reconciliation syncs active api keys to redis', function () {
     // Scan should return no existing keys for this test
     $redisMock->shouldReceive('scan')
         ->once()
-        ->andReturnUsing(function (&$iterator) {
-            $iterator = 0;
+        ->andReturn(false);
 
-            return false;
-        });
-
-    Redis::shouldReceive('connection->client')->andReturn($redisMock);
+    Redis::shouldReceive('connection')->andReturn($redisMock);
 
     Log::shouldReceive('info')
         ->once()
@@ -89,13 +86,9 @@ test('reconciliation syncs api keys with expiration dates', function () {
 
     $redisMock->shouldReceive('scan')
         ->once()
-        ->andReturnUsing(function (&$iterator) {
-            $iterator = 0;
+        ->andReturn(false);
 
-            return false;
-        });
-
-    Redis::shouldReceive('connection->client')->andReturn($redisMock);
+    Redis::shouldReceive('connection')->andReturn($redisMock);
 
     Log::shouldReceive('info')->twice();
 
@@ -118,26 +111,16 @@ test('reconciliation deletes orphaned keys from redis', function () {
     $redisMock->shouldReceive('setex')->never();
 
     // Scan returns an orphaned key
-    $scanCallCount = 0;
     $redisMock->shouldReceive('scan')
-        ->andReturnUsing(function (&$iterator) use ($orphanedRedisKey, &$scanCallCount) {
-            $scanCallCount++;
-            if ($scanCallCount === 1) {
-                $iterator = 0;
-
-                return [$orphanedRedisKey];
-            }
-            $iterator = 0;
-
-            return false;
-        });
+        ->once()
+        ->andReturn([0, [$orphanedRedisKey]]);
 
     // Should delete the orphaned key
     $redisMock->shouldReceive('del')
         ->once()
         ->with($orphanedRedisKey);
 
-    Redis::shouldReceive('connection->client')->andReturn($redisMock);
+    Redis::shouldReceive('connection')->andReturn($redisMock);
 
     Log::shouldReceive('info')->byDefault();
     Log::shouldReceive('info')
@@ -176,24 +159,14 @@ test('reconciliation keeps active keys in redis', function () {
         });
 
     // Scan returns the active key
-    $scanCallCount = 0;
     $redisMock->shouldReceive('scan')
-        ->andReturnUsing(function (&$iterator) use ($activeRedisKey, &$scanCallCount) {
-            $scanCallCount++;
-            if ($scanCallCount === 1) {
-                $iterator = 0;
-
-                return [$activeRedisKey];
-            }
-            $iterator = 0;
-
-            return false;
-        });
+        ->once()
+        ->andReturn([0, [$activeRedisKey]]);
 
     // Should NOT delete the active key
     $redisMock->shouldReceive('del')->never();
 
-    Redis::shouldReceive('connection->client')->andReturn($redisMock);
+    Redis::shouldReceive('connection')->andReturn($redisMock);
 
     Log::shouldReceive('info')->byDefault();
     Log::shouldReceive('info')
@@ -220,13 +193,9 @@ test('reconciliation logs errors for failed syncs', function () {
 
     $redisMock->shouldReceive('scan')
         ->once()
-        ->andReturnUsing(function (&$iterator) {
-            $iterator = 0;
+        ->andReturn(false);
 
-            return false;
-        });
-
-    Redis::shouldReceive('connection->client')->andReturn($redisMock);
+    Redis::shouldReceive('connection')->andReturn($redisMock);
 
     Log::shouldReceive('info')->byDefault();
     Log::shouldReceive('error')
@@ -259,19 +228,9 @@ test('reconciliation logs errors for failed deletes', function () {
     $redisMock->shouldReceive('setex')->never();
 
     // Scan returns an orphaned key
-    $scanCallCount = 0;
     $redisMock->shouldReceive('scan')
-        ->andReturnUsing(function (&$iterator) use ($orphanedRedisKey, &$scanCallCount) {
-            $scanCallCount++;
-            if ($scanCallCount === 1) {
-                $iterator = 0;
-
-                return [$orphanedRedisKey];
-            }
-            $iterator = 0;
-
-            return false;
-        });
+        ->once()
+        ->andReturn([0, [$orphanedRedisKey]]);
 
     // Delete fails
     $redisMock->shouldReceive('del')
@@ -279,7 +238,7 @@ test('reconciliation logs errors for failed deletes', function () {
         ->with($orphanedRedisKey)
         ->andThrow(new RuntimeException('Redis delete failed'));
 
-    Redis::shouldReceive('connection->client')->andReturn($redisMock);
+    Redis::shouldReceive('connection')->andReturn($redisMock);
 
     Log::shouldReceive('info')->byDefault();
     Log::shouldReceive('error')
@@ -311,6 +270,13 @@ test('reconciliation has correct tags', function () {
     ]);
 });
 
+test('reconciliation has correct retry configuration', function () {
+    $job = new ReconcileApiKeysToRedis;
+
+    expect($job->tries)->toBe(3)
+        ->and($job->backoff)->toBe([5, 30, 60]);
+});
+
 test('reconciliation handles scan errors gracefully', function () {
     $redisMock = Mockery::mock();
 
@@ -322,7 +288,7 @@ test('reconciliation handles scan errors gracefully', function () {
         ->once()
         ->andThrow(new RuntimeException('Redis scan failed'));
 
-    Redis::shouldReceive('connection->client')->andReturn($redisMock);
+    Redis::shouldReceive('connection')->andReturn($redisMock);
 
     Log::shouldReceive('info')->byDefault();
     Log::shouldReceive('error')
@@ -363,13 +329,9 @@ test('reconciliation ensures minimum ttl of 60 seconds for keys near expiration'
 
     $redisMock->shouldReceive('scan')
         ->once()
-        ->andReturnUsing(function (&$iterator) {
-            $iterator = 0;
+        ->andReturn(false);
 
-            return false;
-        });
-
-    Redis::shouldReceive('connection->client')->andReturn($redisMock);
+    Redis::shouldReceive('connection')->andReturn($redisMock);
 
     Log::shouldReceive('info')->twice();
 

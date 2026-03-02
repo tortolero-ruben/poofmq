@@ -29,7 +29,8 @@ class SyncApiKeyToRedis implements ShouldQueue
         public string $keyPrefix,
         public string $keyHash,
         public int $userId,
-        public ?int $expiresAtTimestamp = null
+        public ?int $expiresAtTimestamp = null,
+        public ?string $projectId = null
     ) {}
 
     /**
@@ -51,6 +52,7 @@ class SyncApiKeyToRedis implements ShouldQueue
             Log::info('API key synced to Redis', [
                 'key_prefix' => $this->keyPrefix,
                 'user_id' => $this->userId,
+                'project_id' => $this->projectId,
                 'ttl' => $ttl,
                 'expires_at' => $this->expiresAtTimestamp,
             ]);
@@ -100,13 +102,14 @@ class SyncApiKeyToRedis implements ShouldQueue
     /**
      * Build the data array to store in Redis.
      *
-     * @return array{key_hash: string, user_id: int, expires_at: int|null}
+     * @return array{key_hash: string, user_id: int, project_id: string|null, expires_at: int|null}
      */
     protected function buildKeyData(): array
     {
         return [
             'key_hash' => $this->keyHash,
             'user_id' => $this->userId,
+            'project_id' => $this->projectId,
             'expires_at' => $this->expiresAtTimestamp,
         ];
     }

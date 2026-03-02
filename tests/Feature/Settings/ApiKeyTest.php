@@ -3,15 +3,13 @@
 use App\Jobs\RevokeApiKeyInRedis;
 use App\Jobs\SyncApiKeyToRedis;
 use App\Models\ApiKey;
+use App\Models\Project;
 use App\Models\User;
 use App\Services\ApiKeyService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Bus;
 
 uses(RefreshDatabase::class);
-
-// Note: Tests that render Inertia pages are marked as skipped until frontend is built.
-// The API endpoint tests (store/destroy) work without frontend files.
 
 test('unauthenticated users cannot view api keys index', function () {
     $response = $this->get(route('api-keys.index'));
@@ -35,6 +33,7 @@ test('users can create an api key', function () {
         'message',
     ]);
     $response->assertJsonPath('api_key.name', 'Test API Key');
+    $response->assertJsonPath('api_key.project_id', null);
 
     expect($response->json('plain_text_key'))->toStartWith('poofmq_');
     expect(strlen($response->json('plain_text_key')))->toBe(50);
@@ -45,6 +44,47 @@ test('users can create an api key', function () {
     ]);
 
     Bus::assertDispatched(SyncApiKeyToRedis::class);
+});
+
+test('users can create an api key scoped to their project', function () {
+    Bus::fake();
+
+    $user = User::factory()->create();
+    $project = Project::factory()->create(['user_id' => $user->id]);
+
+    $response = $this->actingAs($user)->postJson(route('api-keys.store'), [
+        'name' => 'Project API Key',
+        'project_id' => $project->id,
+    ]);
+
+    $response->assertCreated();
+    $response->assertJsonPath('api_key.project_id', $project->id);
+    $response->assertJsonPath('api_key.project_name', $project->name);
+
+    $this->assertDatabaseHas('api_keys', [
+        'user_id' => $user->id,
+        'project_id' => $project->id,
+        'name' => 'Project API Key',
+    ]);
+});
+
+test('users cannot create an api key for another users project', function () {
+    $user = User::factory()->create();
+    $otherUser = User::factory()->create();
+    $project = Project::factory()->create(['user_id' => $otherUser->id]);
+
+    $response = $this->actingAs($user)->postJson(route('api-keys.store'), [
+        'name' => 'Invalid Project API Key',
+        'project_id' => $project->id,
+    ]);
+
+    $response->assertUnprocessable();
+    $response->assertJsonValidationErrors(['project_id']);
+
+    $this->assertDatabaseMissing('api_keys', [
+        'user_id' => $user->id,
+        'name' => 'Invalid Project API Key',
+    ]);
 });
 
 test('users can create an api key with expiration date', function () {
@@ -113,6 +153,25 @@ test('users can revoke their api key', function () {
     $apiKey->refresh();
     expect($apiKey->isRevoked())->toBeTrue();
     expect($apiKey->revoked_by)->toBe($user->id);
+
+    Bus::assertDispatched(RevokeApiKeyInRedis::class);
+});
+
+test('users can revoke their api key with a json response', function () {
+    Bus::fake();
+
+    $user = User::factory()->create();
+    $apiKey = ApiKey::factory()->create(['user_id' => $user->id]);
+
+    $response = $this->actingAs($user)->deleteJson(route('api-keys.destroy', $apiKey));
+
+    $response->assertOk();
+    $response->assertJson([
+        'message' => 'API key revoked successfully.',
+    ]);
+
+    $apiKey->refresh();
+    expect($apiKey->isRevoked())->toBeTrue();
 
     Bus::assertDispatched(RevokeApiKeyInRedis::class);
 });
@@ -268,9 +327,8 @@ test('unverified users cannot access api keys', function () {
 
     // The route has 'verified' middleware, so unverified users should be redirected
     $response->assertRedirect();
-})->skip('Requires frontend build');
+});
 
-// Inertia page tests - skipped until frontend is built
 test('users can view their api keys index', function () {
     $user = User::factory()->create();
     ApiKey::factory()->count(3)->create(['user_id' => $user->id]);
@@ -278,8 +336,8 @@ test('users can view their api keys index', function () {
     $response = $this->actingAs($user)->get(route('api-keys.index'));
 
     $response->assertOk();
-    // Inertia assertion removed - test passes if response is 200
-})->skip('Requires frontend build');
+    expect($response->inertiaProps('apiKeys'))->toHaveCount(3);
+});
 
 test('users cannot view other users api keys in list', function () {
     $user = User::factory()->create();
@@ -289,8 +347,8 @@ test('users cannot view other users api keys in list', function () {
     $response = $this->actingAs($user)->get(route('api-keys.index'));
 
     $response->assertOk();
-    // Verify user sees no keys from other users via controller logic
-})->skip('Requires frontend build');
+    expect($response->inertiaProps('apiKeys'))->toHaveCount(0);
+});
 
 test('api key index shows validity status', function () {
     $user = User::factory()->create();
@@ -301,7 +359,9 @@ test('api key index shows validity status', function () {
     $response = $this->actingAs($user)->get(route('api-keys.index'));
 
     $response->assertOk();
-})->skip('Requires frontend build');
+    $apiKeys = collect($response->inertiaProps('apiKeys'));
+    expect($apiKeys->pluck('is_valid')->all())->toContain(true, false);
+});
 
 // Redis Sync Tests
 test('generating api key dispatches sync to redis job', function () {
@@ -317,7 +377,8 @@ test('generating api key dispatches sync to redis job', function () {
             ->and($job->keyPrefix)->toBe($result['api_key']->key_prefix)
             ->and($job->keyHash)->toBe($result['api_key']->key_hash)
             ->and($job->userId)->toBe($result['api_key']->user_id)
-            ->and($job->expiresAtTimestamp)->toBeNull();
+            ->and($job->expiresAtTimestamp)->toBeNull()
+            ->and($job->projectId)->toBeNull();
 
         return true;
     });
@@ -333,7 +394,25 @@ test('generating api key with expiration dispatches sync job with expiration', f
     $result = $service->generate($user, 'Expiring Key', $expiresAt);
 
     Bus::assertDispatched(SyncApiKeyToRedis::class, function ($job) use ($expiresAt) {
-        expect($job->expiresAtTimestamp)->toBe($expiresAt->timestamp);
+        expect($job->expiresAtTimestamp)->toBe($expiresAt->timestamp)
+            ->and($job->projectId)->toBeNull();
+
+        return true;
+    });
+});
+
+test('generating project api key dispatches sync job with project id', function () {
+    Bus::fake();
+
+    $user = User::factory()->create();
+    $project = Project::factory()->create(['user_id' => $user->id]);
+    $service = app(ApiKeyService::class);
+
+    $result = $service->generate($user, 'Project Key', null, $project->id);
+
+    Bus::assertDispatched(SyncApiKeyToRedis::class, function ($job) use ($result, $project) {
+        expect($job->apiKeyId)->toBe($result['api_key']->id)
+            ->and($job->projectId)->toBe($project->id);
 
         return true;
     });

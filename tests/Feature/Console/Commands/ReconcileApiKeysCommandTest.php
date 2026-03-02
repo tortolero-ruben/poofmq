@@ -27,13 +27,9 @@ test('command executes reconciliation successfully', function () {
 
     $redisMock->shouldReceive('scan')
         ->once()
-        ->andReturnUsing(function (&$iterator) {
-            $iterator = 0;
+        ->andReturn(false);
 
-            return false;
-        });
-
-    Redis::shouldReceive('connection->client')->andReturn($redisMock);
+    Redis::shouldReceive('connection')->andReturn($redisMock);
 
     $this->artisan('app:reconcile-api-keys')
         ->expectsOutput('Starting API key reconciliation...')
@@ -50,13 +46,9 @@ test('command handles empty database gracefully', function () {
     // No keys to scan
     $redisMock->shouldReceive('scan')
         ->once()
-        ->andReturnUsing(function (&$iterator) {
-            $iterator = 0;
+        ->andReturn(false);
 
-            return false;
-        });
-
-    Redis::shouldReceive('connection->client')->andReturn($redisMock);
+    Redis::shouldReceive('connection')->andReturn($redisMock);
 
     $this->artisan('app:reconcile-api-keys')
         ->expectsOutput('Starting API key reconciliation...')

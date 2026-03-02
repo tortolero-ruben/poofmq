@@ -2,6 +2,7 @@
 
 use App\Jobs\SyncApiKeyToRedis;
 use App\Models\ApiKey;
+use App\Models\Project;
 use App\Models\User;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Log;
@@ -30,6 +31,7 @@ test('sync api key to redis stores key data with correct format', function () {
             expect($decoded)->toBe([
                 'key_hash' => $apiKey->key_hash,
                 'user_id' => $apiKey->user_id,
+                'project_id' => null,
                 'expires_at' => null,
             ]);
 
@@ -48,6 +50,40 @@ test('sync api key to redis stores key data with correct format', function () {
         keyHash: $apiKey->key_hash,
         userId: $apiKey->user_id,
         expiresAtTimestamp: null
+    );
+
+    $job->handle();
+});
+
+test('sync api key to redis stores project id when available', function () {
+    $user = User::factory()->create();
+    $project = Project::factory()->create(['user_id' => $user->id]);
+    $apiKey = ApiKey::factory()->create([
+        'user_id' => $user->id,
+        'project_id' => $project->id,
+    ]);
+
+    $redisMock = Mockery::mock();
+    $redisMock->shouldReceive('setex')
+        ->once()
+        ->withArgs(function ($key, $ttl, $data) use ($project) {
+            $decoded = json_decode($data, true);
+
+            expect($decoded['project_id'])->toBe($project->id);
+
+            return true;
+        });
+
+    Redis::shouldReceive('connection->client')->andReturn($redisMock);
+    Log::shouldReceive('info')->once()->with('API key synced to Redis', Mockery::any());
+
+    $job = new SyncApiKeyToRedis(
+        apiKeyId: $apiKey->id,
+        keyPrefix: $apiKey->key_prefix,
+        keyHash: $apiKey->key_hash,
+        userId: $apiKey->user_id,
+        expiresAtTimestamp: null,
+        projectId: $project->id
     );
 
     $job->handle();

@@ -41,6 +41,8 @@ class ProjectController extends Controller
      */
     public function store(StoreProjectRequest $request): JsonResponse
     {
+        $this->authorize('create', Project::class);
+
         $project = Project::create([
             'user_id' => $request->user()->id,
             'name' => $request->validated('name'),
@@ -84,11 +86,17 @@ class ProjectController extends Controller
     /**
      * Archive the specified project.
      */
-    public function destroy(Request $request, Project $project): RedirectResponse
+    public function destroy(Request $request, Project $project): JsonResponse|RedirectResponse
     {
         $this->authorize('delete', $project);
 
         $project->archive();
+
+        if ($request->expectsJson()) {
+            return response()->json([
+                'message' => 'Project archived successfully.',
+            ]);
+        }
 
         return back()->with('status', 'Project archived successfully.');
     }

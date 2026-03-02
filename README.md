@@ -110,6 +110,37 @@ make proto-check-generated  # regenerate and fail if tracked artifacts drift
 BUF_VERSION=1.52.0 make proto-generate  # override default buf image version
 ```
 
+## Auth Token Issuance and Revocation (RUB-250)
+
+The Laravel portal uses Fortify for session authentication flows and Sanctum for API token authentication.
+
+Token issuance and revocation behavior:
+- Issue a token from application code with `User::createToken($name, $abilities)` and store the returned plain text value once on creation.
+- Authenticate API requests with `Authorization: Bearer <plain-text-token>` against routes protected by `auth:sanctum`.
+- Revoke a token by deleting it from the `personal_access_tokens` table through Eloquent (for example `User::tokens()->whereKey($tokenId)->delete()`).
+- Revoked tokens are immediately rejected on subsequent requests.
+
+See coverage in `tests/Feature/Auth/ApiTokenAuthenticationTest.php` and `tests/Feature/Auth`.
+
+## API Key Reconciliation Runbook (RUB-255)
+
+The reconciliation flow rebuilds Redis API key auth material from Postgres as source of truth.
+
+What runs automatically:
+- Scheduler enqueues `App\Jobs\ReconcileApiKeysToRedis` every 5 minutes in `routes/console.php`.
+- The job retries with backoff (`tries=3`, `backoff=[5,30,60]`) and writes summary/error logs.
+
+Manual recovery steps:
+1. Check worker and scheduler health (`php artisan queue:work`, scheduler process, and queue backlog).
+2. Inspect failed jobs with `php artisan queue:failed`.
+3. Retry failed jobs with `php artisan queue:retry all` (or specific IDs), then monitor logs for completion.
+4. Trigger an immediate reconciliation run with `php artisan app:reconcile-api-keys`.
+5. Confirm logs contain `API key reconciliation completed` with expected `synced`, `deleted`, and `errors` counters.
+
+Failure handling notes:
+- Sync and reconcile jobs throw on Redis write/read failures so Laravel queue failure handling can dead-letter them into `failed_jobs`.
+- Reconciliation safely removes orphaned Redis auth keys and rehydrates active keys, so it can be rerun idempotently after incidents.
+
 ## CI Status Checks
 
 Pull requests are gated by the `ci` GitHub Actions workflow. Configure these job checks as required branch protections:

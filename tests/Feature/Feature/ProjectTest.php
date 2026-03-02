@@ -19,7 +19,8 @@ test('users can view their projects index', function () {
     $response = $this->actingAs($user)->get(route('projects.index'));
 
     $response->assertOk();
-})->skip('Requires frontend build');
+    expect($response->inertiaProps('projects'))->toHaveCount(3);
+});
 
 test('users cannot view other users projects in list', function () {
     $user = User::factory()->create();
@@ -31,7 +32,7 @@ test('users cannot view other users projects in list', function () {
     $response->assertOk();
     // Verify the user sees no projects from other users
     expect($response->inertiaProps('projects'))->toHaveCount(0);
-})->skip('Requires frontend build');
+});
 
 test('archived projects are not shown in index', function () {
     $user = User::factory()->create();
@@ -44,7 +45,7 @@ test('archived projects are not shown in index', function () {
     $projects = $response->inertiaProps('projects');
     expect($projects)->toHaveCount(1);
     expect($projects[0]['name'])->toBe('Active Project');
-})->skip('Requires frontend build');
+});
 
 // Store Tests
 test('users can create a project', function () {
@@ -185,6 +186,21 @@ test('users can archive their project', function () {
 
     $response->assertRedirect();
     $response->assertSessionHas('status', 'Project archived successfully.');
+
+    $project->refresh();
+    expect($project->isArchived())->toBeTrue();
+});
+
+test('users can archive their project with a json response', function () {
+    $user = User::factory()->create();
+    $project = Project::factory()->create(['user_id' => $user->id]);
+
+    $response = $this->actingAs($user)->deleteJson(route('projects.destroy', $project));
+
+    $response->assertOk();
+    $response->assertJson([
+        'message' => 'Project archived successfully.',
+    ]);
 
     $project->refresh();
     expect($project->isArchived())->toBeTrue();

@@ -3,13 +3,24 @@
 namespace App\Jobs;
 
 use App\Models\ApiKey;
+use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Redis;
 
-class ReconcileApiKeysToRedis
+class ReconcileApiKeysToRedis implements ShouldQueue
 {
     use Queueable;
+
+    /**
+     * The number of times the job may be attempted.
+     */
+    public int $tries = 3;
+
+    /**
+     * The number of seconds to wait before retrying the job.
+     */
+    public array $backoff = [5, 30, 60];
 
     /**
      * The number of records to process per chunk.
@@ -28,22 +39,16 @@ class ReconcileApiKeysToRedis
     protected int $errorCount = 0;
 
     /**
-     * Create a new job instance.
-     */
-    public function __construct()
-    {
-        //
-    }
-
-    /**
      * Execute the job.
      */
     public function handle(): void
     {
+        $redis = Redis::connection();
+
         Log::info('API key reconciliation started');
 
-        $this->reconcileActiveKeys();
-        $this->cleanupRevokedKeys();
+        $this->reconcileActiveKeys($redis);
+        $this->cleanupRevokedKeys($redis);
 
         Log::info('API key reconciliation completed', [
             'total_keys' => $this->totalKeys,
@@ -56,16 +61,16 @@ class ReconcileApiKeysToRedis
     /**
      * Reconcile active API keys to Redis.
      */
-    protected function reconcileActiveKeys(): void
+    protected function reconcileActiveKeys($redis): void
     {
         ApiKey::query()
             ->active()
-            ->chunkById($this->chunkSize, function ($apiKeys) {
+            ->chunkById($this->chunkSize, function ($apiKeys) use ($redis) {
                 foreach ($apiKeys as $apiKey) {
                     $this->totalKeys++;
 
                     try {
-                        $this->syncApiKeyToRedis($apiKey);
+                        $this->syncApiKeyToRedis($apiKey, $redis);
                         $this->syncedKeys++;
                     } catch (\Throwable $e) {
                         $this->errorCount++;
@@ -82,14 +87,25 @@ class ReconcileApiKeysToRedis
     /**
      * Clean up revoked/expired keys from Redis.
      */
-    protected function cleanupRevokedKeys(): void
+    protected function cleanupRevokedKeys($redis): void
     {
-        $redis = Redis::connection()->client();
         $pattern = $this->buildRedisKeyPattern();
 
         try {
-            $iterator = null;
-            while (($keys = $redis->scan($iterator, ['match' => $pattern, 'count' => 100])) !== false) {
+            $iterator = 0;
+
+            while (true) {
+                $scanResult = $redis->scan($iterator, [
+                    'match' => $pattern,
+                    'count' => 100,
+                ]);
+
+                if ($scanResult === false) {
+                    break;
+                }
+
+                [$iterator, $keys] = $scanResult;
+
                 foreach ($keys as $redisKey) {
                     $keyPrefix = $this->extractKeyPrefix($redisKey);
 
@@ -138,13 +154,13 @@ class ReconcileApiKeysToRedis
     /**
      * Sync an API key to Redis.
      */
-    protected function syncApiKeyToRedis(ApiKey $apiKey): void
+    protected function syncApiKeyToRedis(ApiKey $apiKey, $redis): void
     {
         $redisKey = $this->buildRedisKey($apiKey->key_prefix);
         $ttl = $this->calculateTtl($apiKey);
         $data = $this->buildKeyData($apiKey);
 
-        Redis::connection()->client()->setex(
+        $redis->setex(
             $redisKey,
             $ttl,
             json_encode($data, JSON_THROW_ON_ERROR)
@@ -211,13 +227,14 @@ class ReconcileApiKeysToRedis
     /**
      * Build the data array to store in Redis.
      *
-     * @return array{key_hash: string, user_id: int, expires_at: int|null}
+     * @return array{key_hash: string, user_id: int, project_id: string|null, expires_at: int|null}
      */
     protected function buildKeyData(ApiKey $apiKey): array
     {
         return [
             'key_hash' => $apiKey->key_hash,
             'user_id' => $apiKey->user_id,
+            'project_id' => $apiKey->project_id,
             'expires_at' => $apiKey->expires_at?->timestamp,
         ];
     }

@@ -19,15 +19,20 @@ class ApiKeyService
      *
      * @throws RandomException
      */
-    public function generate(User $user, string $name, ?\DateTimeInterface $expiresAt = null): array
-    {
+    public function generate(
+        User $user,
+        string $name,
+        ?\DateTimeInterface $expiresAt = null,
+        ?string $projectId = null
+    ): array {
         $plainTextKey = $this->generateRawKey();
         $keyPrefix = $this->extractPrefix($plainTextKey);
         $keyHash = $this->hashKey($plainTextKey);
 
-        $apiKey = DB::transaction(function () use ($user, $name, $keyPrefix, $keyHash, $expiresAt) {
+        $apiKey = DB::transaction(function () use ($user, $projectId, $name, $keyPrefix, $keyHash, $expiresAt) {
             return ApiKey::create([
                 'user_id' => $user->id,
+                'project_id' => $projectId,
                 'name' => $name,
                 'key_prefix' => $keyPrefix,
                 'key_hash' => $keyHash,
@@ -41,7 +46,8 @@ class ApiKeyService
             keyPrefix: $keyPrefix,
             keyHash: $keyHash,
             userId: $user->id,
-            expiresAtTimestamp: $expiresAt?->getTimestamp()
+            expiresAtTimestamp: $expiresAt?->getTimestamp(),
+            projectId: $projectId
         );
 
         return [

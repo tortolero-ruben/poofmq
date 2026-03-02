@@ -21,10 +21,10 @@ var (
 
 // TTL constants for queue messages
 const (
-	DefaultTTLSeconds = 86400    // 24 hours default
-	MaxTTLSeconds     = 604800   // 7 days maximum
-	MinTTLSeconds     = 1        // 1 second minimum
-	QueueKeyBufferTTL = 3600     // 1 hour buffer added to queue key TTL
+	DefaultTTLSeconds = 86400  // 24 hours default
+	MaxTTLSeconds     = 604800 // 7 days maximum
+	MinTTLSeconds     = 1      // 1 second minimum
+	QueueKeyBufferTTL = 3600   // 1 hour buffer added to queue key TTL
 )
 
 // atomicPopScript is a Lua script that atomically pops a message from a queue.

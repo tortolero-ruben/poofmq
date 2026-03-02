@@ -12,10 +12,10 @@ import (
 
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"github.com/redis/go-redis/v9"
-	poofmqv1 "github.com/rubyapps/poofmq/gen/go/poofmq/v1"
-	"github.com/rubyapps/poofmq-go-api/internal/config"
-	"github.com/rubyapps/poofmq-go-api/internal/queue"
-	"github.com/rubyapps/poofmq-go-api/internal/service"
+	poofmqv1 "github.com/tortolero-ruben/poofmq/gen/go/poofmq"
+	"github.com/tortolero-ruben/poofmq/services/go-api/internal/config"
+	"github.com/tortolero-ruben/poofmq/services/go-api/internal/queue"
+	"github.com/tortolero-ruben/poofmq/services/go-api/internal/service"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 )
@@ -68,7 +68,7 @@ func main() {
 	}()
 
 	// Create gRPC-Gateway mux
-	ctx := context.Background()
+	ctx = context.Background()
 	gwMux := runtime.NewServeMux()
 
 	// Register gRPC-Gateway handlers

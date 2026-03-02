@@ -6,9 +6,9 @@ import (
 	"errors"
 	"time"
 
-	poofmqv1 "github.com/rubyapps/poofmq/gen/go/poofmq/v1"
-	"github.com/rubyapps/poofmq-go-api/internal/queue"
-	"github.com/rubyapps/poofmq-go-api/internal/validation"
+	poofmqv1 "github.com/tortolero-ruben/poofmq/gen/go/poofmq"
+	"github.com/tortolero-ruben/poofmq/services/go-api/internal/queue"
+	"github.com/tortolero-ruben/poofmq/services/go-api/internal/validation"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/structpb"
@@ -105,8 +105,8 @@ func (s *QueueServiceServer) Pop(ctx context.Context, req *poofmqv1.PopMessageRe
 	// Convert message to protobuf response
 	return &poofmqv1.PopMessageResponse{
 		Message: &poofmqv1.QueueMessage{
-			MessageId:     msg.ID,
-			QueueId:       msg.QueueID,
+			MessageId: msg.ID,
+			QueueId:   msg.QueueID,
 			Envelope: &poofmqv1.PayloadEnvelope{
 				EventType: msg.EventType,
 				Payload:   payloadStruct,

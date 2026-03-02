@@ -5,9 +5,9 @@ import (
 	"testing"
 	"time"
 
-	poofmqv1 "github.com/rubyapps/poofmq/gen/go/poofmq/v1"
-	"github.com/rubyapps/poofmq-go-api/internal/queue"
-	"github.com/rubyapps/poofmq-go-api/internal/testhelpers"
+	poofmqv1 "github.com/tortolero-ruben/poofmq/gen/go/poofmq"
+	"github.com/tortolero-ruben/poofmq/services/go-api/internal/queue"
+	"github.com/tortolero-ruben/poofmq/services/go-api/internal/testhelpers"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/structpb"
@@ -342,7 +342,7 @@ func TestQueueServiceServer_Pop(t *testing.T) {
 		{
 			name: "valid pop with visibility timeout",
 			req: &poofmqv1.PopMessageRequest{
-				QueueId:                   "pop-test-queue-2",
+				QueueId:                  "pop-test-queue-2",
 				VisibilityTimeoutSeconds: int32Ptr(30),
 			},
 			wantCode: codes.OK,
@@ -358,7 +358,7 @@ func TestQueueServiceServer_Pop(t *testing.T) {
 		{
 			name: "negative visibility timeout",
 			req: &poofmqv1.PopMessageRequest{
-				QueueId:                   "pop-test-queue-3",
+				QueueId:                  "pop-test-queue-3",
 				VisibilityTimeoutSeconds: int32Ptr(-1),
 			},
 			wantCode:   codes.InvalidArgument,
@@ -367,7 +367,7 @@ func TestQueueServiceServer_Pop(t *testing.T) {
 		{
 			name: "negative wait timeout",
 			req: &poofmqv1.PopMessageRequest{
-				QueueId:             "pop-test-queue-4",
+				QueueId:            "pop-test-queue-4",
 				WaitTimeoutSeconds: int32Ptr(-1),
 			},
 			wantCode:   codes.InvalidArgument,
@@ -383,7 +383,7 @@ func TestQueueServiceServer_Pop(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			resp, err := server.Pop(ctx, tt.req)
+			_, err := server.Pop(ctx, tt.req)
 
 			if tt.wantCode == codes.OK {
 				if err != nil {

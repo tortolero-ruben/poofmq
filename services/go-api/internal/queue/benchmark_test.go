@@ -6,7 +6,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/rubyapps/poofmq-go-api/internal/testhelpers"
+	"github.com/tortolero-ruben/poofmq/services/go-api/internal/testhelpers"
 )
 
 // BenchmarkPush measures the latency of push operations.

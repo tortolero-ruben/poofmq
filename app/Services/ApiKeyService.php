@@ -2,6 +2,8 @@
 
 namespace App\Services;
 
+use App\Jobs\RevokeApiKeyInRedis;
+use App\Jobs\SyncApiKeyToRedis;
 use App\Models\ApiKey;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
@@ -32,6 +34,15 @@ class ApiKeyService
                 'expires_at' => $expiresAt,
             ]);
         });
+
+        // Dispatch job to sync API key to Redis
+        SyncApiKeyToRedis::dispatch(
+            apiKeyId: $apiKey->id,
+            keyPrefix: $keyPrefix,
+            keyHash: $keyHash,
+            userId: $user->id,
+            expiresAtTimestamp: $expiresAt?->getTimestamp()
+        );
 
         return [
             'api_key' => $apiKey,
@@ -68,10 +79,21 @@ class ApiKeyService
             return false;
         }
 
-        return $apiKey->update([
+        $updated = $apiKey->update([
             'revoked_at' => now(),
             'revoked_by' => $revoker->id,
         ]);
+
+        if ($updated) {
+            // Dispatch job to revoke API key in Redis
+            RevokeApiKeyInRedis::dispatch(
+                keyPrefix: $apiKey->key_prefix,
+                userId: $apiKey->user_id,
+                expiresAtTimestamp: $apiKey->expires_at?->getTimestamp()
+            );
+        }
+
+        return $updated;
     }
 
     /**

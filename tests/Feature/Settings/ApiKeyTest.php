@@ -1,9 +1,12 @@
 <?php
 
+use App\Jobs\RevokeApiKeyInRedis;
+use App\Jobs\SyncApiKeyToRedis;
 use App\Models\ApiKey;
 use App\Models\User;
 use App\Services\ApiKeyService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Bus;
 
 uses(RefreshDatabase::class);
 
@@ -17,6 +20,8 @@ test('unauthenticated users cannot view api keys index', function () {
 });
 
 test('users can create an api key', function () {
+    Bus::fake();
+
     $user = User::factory()->create();
 
     $response = $this->actingAs($user)->postJson(route('api-keys.store'), [
@@ -38,9 +43,13 @@ test('users can create an api key', function () {
         'user_id' => $user->id,
         'name' => 'Test API Key',
     ]);
+
+    Bus::assertDispatched(SyncApiKeyToRedis::class);
 });
 
 test('users can create an api key with expiration date', function () {
+    Bus::fake();
+
     $user = User::factory()->create();
     $expiresAt = now()->addDays(30)->toIso8601String();
 
@@ -52,6 +61,8 @@ test('users can create an api key with expiration date', function () {
     $response->assertCreated();
     $response->assertJsonPath('api_key.name', 'Expiring API Key');
     $response->assertJsonStructure(['api_key' => ['expires_at']]);
+
+    Bus::assertDispatched(SyncApiKeyToRedis::class);
 });
 
 test('api key validation requires name', function () {
@@ -87,6 +98,8 @@ test('api key expiration must be in the future', function () {
 });
 
 test('users can revoke their api key', function () {
+    Bus::fake();
+
     $user = User::factory()->create();
     $apiKey = ApiKey::factory()->create(['user_id' => $user->id]);
 
@@ -100,6 +113,8 @@ test('users can revoke their api key', function () {
     $apiKey->refresh();
     expect($apiKey->isRevoked())->toBeTrue();
     expect($apiKey->revoked_by)->toBe($user->id);
+
+    Bus::assertDispatched(RevokeApiKeyInRedis::class);
 });
 
 test('users cannot revoke other users api keys', function () {
@@ -116,6 +131,8 @@ test('users cannot revoke other users api keys', function () {
 });
 
 test('api key hash is stored not plain text', function () {
+    Bus::fake();
+
     $user = User::factory()->create();
 
     $response = $this->actingAs($user)->postJson(route('api-keys.store'), [
@@ -130,6 +147,8 @@ test('api key hash is stored not plain text', function () {
 });
 
 test('api key prefix is stored for lookup', function () {
+    Bus::fake();
+
     $user = User::factory()->create();
 
     $response = $this->actingAs($user)->postJson(route('api-keys.store'), [
@@ -144,6 +163,8 @@ test('api key prefix is stored for lookup', function () {
 });
 
 test('api key service can verify valid key', function () {
+    Bus::fake();
+
     $user = User::factory()->create();
     $service = app(ApiKeyService::class);
 
@@ -165,6 +186,8 @@ test('api key service returns null for invalid key', function () {
 });
 
 test('api key service returns null for revoked key', function () {
+    Bus::fake();
+
     $user = User::factory()->create();
     $service = app(ApiKeyService::class);
 
@@ -217,6 +240,8 @@ test('api key is invalid when revoked', function () {
 });
 
 test('plain text key format is correct', function () {
+    Bus::fake();
+
     $user = User::factory()->create();
 
     $response = $this->actingAs($user)->postJson(route('api-keys.store'), [
@@ -277,3 +302,90 @@ test('api key index shows validity status', function () {
 
     $response->assertOk();
 })->skip('Requires frontend build');
+
+// Redis Sync Tests
+test('generating api key dispatches sync to redis job', function () {
+    Bus::fake();
+
+    $user = User::factory()->create();
+    $service = app(ApiKeyService::class);
+
+    $result = $service->generate($user, 'Test Key');
+
+    Bus::assertDispatched(SyncApiKeyToRedis::class, function ($job) use ($result) {
+        expect($job->apiKeyId)->toBe($result['api_key']->id)
+            ->and($job->keyPrefix)->toBe($result['api_key']->key_prefix)
+            ->and($job->keyHash)->toBe($result['api_key']->key_hash)
+            ->and($job->userId)->toBe($result['api_key']->user_id)
+            ->and($job->expiresAtTimestamp)->toBeNull();
+
+        return true;
+    });
+});
+
+test('generating api key with expiration dispatches sync job with expiration', function () {
+    Bus::fake();
+
+    $user = User::factory()->create();
+    $service = app(ApiKeyService::class);
+    $expiresAt = now()->addDays(30);
+
+    $result = $service->generate($user, 'Expiring Key', $expiresAt);
+
+    Bus::assertDispatched(SyncApiKeyToRedis::class, function ($job) use ($expiresAt) {
+        expect($job->expiresAtTimestamp)->toBe($expiresAt->timestamp);
+
+        return true;
+    });
+});
+
+test('revoking api key dispatches revoke in redis job', function () {
+    Bus::fake();
+
+    $user = User::factory()->create();
+    $apiKey = ApiKey::factory()->create(['user_id' => $user->id]);
+    $service = app(ApiKeyService::class);
+
+    $service->revoke($apiKey, $user);
+
+    Bus::assertDispatched(RevokeApiKeyInRedis::class, function ($job) use ($apiKey) {
+        expect($job->keyPrefix)->toBe($apiKey->key_prefix)
+            ->and($job->userId)->toBe($apiKey->user_id)
+            ->and($job->expiresAtTimestamp)->toBeNull();
+
+        return true;
+    });
+});
+
+test('revoking api key with expiration dispatches revoke job with expiration', function () {
+    Bus::fake();
+
+    $user = User::factory()->create();
+    $expiresAt = now()->addDays(30);
+    $apiKey = ApiKey::factory()->create([
+        'user_id' => $user->id,
+        'expires_at' => $expiresAt,
+    ]);
+    $service = app(ApiKeyService::class);
+
+    $service->revoke($apiKey, $user);
+
+    Bus::assertDispatched(RevokeApiKeyInRedis::class, function ($job) use ($expiresAt) {
+        expect($job->expiresAtTimestamp)->toBe($expiresAt->timestamp);
+
+        return true;
+    });
+});
+
+test('revoking already revoked key does not dispatch job', function () {
+    Bus::fake();
+
+    $user = User::factory()->create();
+    $apiKey = ApiKey::factory()->revoked()->create(['user_id' => $user->id]);
+    $service = app(ApiKeyService::class);
+
+    $result = $service->revoke($apiKey, $user);
+
+    expect($result)->toBeFalse();
+    Bus::assertNotDispatched(RevokeApiKeyInRedis::class);
+});

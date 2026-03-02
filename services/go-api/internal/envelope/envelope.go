@@ -340,6 +340,10 @@ func MessageFromJSON(data []byte) (*Message, error) {
 		}
 	}
 
+	if err := msg.Validate(); err != nil {
+		return nil, fmt.Errorf("validation failed: %w", err)
+	}
+
 	return &msg, nil
 }
 

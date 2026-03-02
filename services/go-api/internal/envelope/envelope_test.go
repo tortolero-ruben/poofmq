@@ -167,7 +167,7 @@ func TestEnvelopeValidate(t *testing.T) {
 
 	t.Run("client encrypted valid", func(t *testing.T) {
 		t.Parallel()
-		env := NewEnvelope("test.event", Payload{"key": "value"})
+		env := NewEnvelope("test.event", Payload{})
 		env.EncryptionMode = EncryptionModeClientEncrypted
 		env.EncryptedPayload = []byte("encrypted")
 		env.EncryptionAlgorithm = "AES-256-GCM"
@@ -453,6 +453,30 @@ func TestMessageFromJSONInvalid(t *testing.T) {
 	}
 }
 
+func TestMessageFromJSONInvalidEnvelope(t *testing.T) {
+	t.Parallel()
+
+	now := time.Now().UTC().Format(time.RFC3339Nano)
+	expiresAt := time.Now().Add(30 * time.Minute).UTC().Format(time.RFC3339Nano)
+
+	jsonData := `{
+		"id": "msg-123",
+		"queue_id": "queue-456",
+		"envelope": {
+			"event_type": "",
+			"payload": {}
+		},
+		"queued_at": "` + now + `",
+		"visible_at": "` + now + `",
+		"expires_at": "` + expiresAt + `"
+	}`
+
+	_, err := MessageFromJSON([]byte(jsonData))
+	if err == nil {
+		t.Error("expected error for invalid message envelope")
+	}
+}
+
 func TestMessageIsExpired(t *testing.T) {
 	t.Parallel()
 
@@ -626,7 +650,7 @@ func TestPayloadWithNestedObjects(t *testing.T) {
 func TestEncryptionFieldsSerialization(t *testing.T) {
 	t.Parallel()
 
-	env := NewEnvelope("encrypted.event", Payload{"safe": "data"})
+	env := NewEnvelope("encrypted.event", Payload{})
 	env.EncryptionMode = EncryptionModeClientEncrypted
 	env.EncryptionKeyID = "kms-key-123"
 	env.EncryptionAlgorithm = "AES-256-GCM"

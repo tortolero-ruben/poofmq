@@ -15,7 +15,8 @@ return [
     |
     */
 
-    'default' => env('CACHE_STORE', 'database'),
+    // Default to array when no DB so deploy healthchecks can pass before Postgres is attached.
+    'default' => env('CACHE_STORE', env('DB_URL') ? 'database' : 'array'),
 
     /*
     |--------------------------------------------------------------------------

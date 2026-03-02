@@ -104,6 +104,10 @@ The portal is set up for Railway’s “majestic monolith” pattern: one repo, 
 
 **Prerequisites:** Railway project with **PostgreSQL** and **Redis**. You can add them manually in the dashboard or automate with the CLI (see below).
 
+**Deploy order (DB first):** Railway deploys a service only after any services it depends on via variable references. Set the app’s `DB_URL` to `${{Postgres.DATABASE_URL}}` (and Redis vars to the Redis service). That makes Postgres (and Redis) deploy before the app, worker, and cron. Add Postgres and Redis to the project first, set these variables on the app/worker/cron services, then deploy the app. [`railway/init-app.sh`](railway/init-app.sh) also waits for the database to be reachable before running migrations, so pre-deploy succeeds even if there’s a short race.
+
+**If Postgres and Redis are already deployed:** On each app, worker, and cron service set: `DB_CONNECTION=pgsql`, `DB_URL` = `${{Postgres.DATABASE_URL}}` (use your Postgres service name if different), `REDIS_URL` = `${{Redis.REDIS_URL}}` (or your Redis service name), `QUEUE_CONNECTION=redis`, `CACHE_STORE=redis`, `SESSION_DRIVER=redis`, plus `APP_KEY`, `APP_ENV`, `APP_URL`, and any other required vars below. Then deploy the app.
+
 **Config as code (versioned):** The Laravel app’s build and deploy are defined in the repo so they can be redeployed consistently:
 
 - **[railpack.json](railpack.json)** — Railpack build/deploy: PHP 8.4, Laravel document root `public/`, skip Railpack’s default migrations (we run them in pre-deploy).
@@ -115,7 +119,7 @@ You do not need to set a custom build or pre-deploy command in the dashboard; th
 **1. App service (HTTP)**  
 - Source: this repo (root).  
 - **Build / Deploy:** Handled by [railway.json](railway.json) and [railpack.json](railpack.json) (no need to set custom build or pre-deploy in the dashboard).  
-- **Variables:** all portal env vars (see below). Use `DB_URL` = `${{Postgres.DATABASE_URL}}` and Redis vars from the Redis plugin (`REDIS_URL` or `REDIS_HOST`/`REDIS_PORT`/`REDIS_PASSWORD`).  
+- **Variables:** all portal env vars (see below). Use `DB_URL` = `${{Postgres.DATABASE_URL}}` and Redis from the Redis service: `REDIS_URL` = `${{Redis.REDIS_URL}}` (or `${{Redis.REDIS_PRIVATE_URL}}` for in-project traffic). Alternatively set `REDIS_HOST` / `REDIS_PORT` / `REDIS_PASSWORD` from the Redis service.  
 - Generate a **public domain** in Networking.
 
 **2. Worker service (queue)**  
@@ -128,13 +132,15 @@ You do not need to set a custom build or pre-deploy command in the dashboard; th
 - **Start Command:** `chmod +x ./railway/run-cron.sh && ./railway/run-cron.sh`.  
 - **Variables:** same as App service.
 
+**Adding Worker and Cron:** Create two new services from the same GitHub repo in the Railway dashboard: **Deploy** → **New Service** → **GitHub Repo** → select this repo. Name one **Worker** and the other **Cron**. In each service’s **Settings** → **Deploy**, set the **Custom Start Command** as above (Worker: `run-worker.sh`, Cron: `run-cron.sh`). Then from the repo root run `make railway-set-worker-cron-vars` (or `./railway/set-worker-cron-variables.sh`) to set DB and Redis variables on both. Ensure `APP_KEY`, `APP_ENV`, and `APP_URL` are set (e.g. at environment level or on each service).
+
 **Required / important variables for production**
 
 - `APP_KEY` — from `php artisan key:generate`.  
 - `APP_ENV=production`, `APP_DEBUG=false`, `APP_URL` — your public portal URL (e.g. `https://your-app.up.railway.app`).  
 - `DB_CONNECTION=pgsql`, `DB_URL` — `${{Postgres.DATABASE_URL}}`.  
-- `REDIS_HOST` / `REDIS_PORT` / `REDIS_PASSWORD` (or `REDIS_URL` if you parse it) from Railway Redis.  
-- `QUEUE_CONNECTION=redis`, `CACHE_STORE=redis`.  
+- Redis: `REDIS_URL` = `${{Redis.REDIS_URL}}` (or `REDIS_PRIVATE_URL` for private network), or `REDIS_HOST` / `REDIS_PORT` / `REDIS_PASSWORD` from the Redis service.  
+- `QUEUE_CONNECTION=redis`, `CACHE_STORE=redis`, `SESSION_DRIVER=redis`.  
 - `SESSION_SECURE_COOKIE=true` (Railway serves over HTTPS).  
 - `LOG_CHANNEL=stderr`, `LOG_STDERR_FORMATTER=\Monolog\Formatter\JsonFormatter` (optional; for Railway log aggregation).  
 - Optional: `RAILWAY_API_TOKEN`, `RAILWAY_PROJECT_ID` (for dashboard billing/runway).  
@@ -150,7 +156,7 @@ make railway-add-redis        # add Redis only
 make railway-add-databases    # add Redis and Postgres
 ```
 
-Or run the script directly: `./railway/add-redis.sh` or `./railway/add-redis.sh --postgres`. This uses the [Railway CLI](https://docs.railway.com/guides/cli) `railway add --database redis` (and `--database postgres`). After adding, set your app service variables to reference `${{Postgres.DATABASE_URL}}` and the Redis service’s `REDIS_*` (or `REDIS_URL`). Re-link to your Laravel app service before the next deploy: `railway link`.
+Or run the script directly: `./railway/add-redis.sh` or `./railway/add-redis.sh --postgres`. This uses the [Railway CLI](https://docs.railway.com/guides/cli) `railway add --database redis` (and `--database postgres`). After adding, set your app (and worker/cron) variables: `DB_URL` = `${{Postgres.DATABASE_URL}}`, `REDIS_URL` = `${{Redis.REDIS_URL}}` (or Redis’s `REDIS_HOST` / `REDIS_PORT` / `REDIS_PASSWORD`). Re-link to your Laravel app service before the next deploy: `railway link`.
 
 **Railway MCP:** If you use the Railway MCP in Cursor (e.g. `check-railway-status`, `list-projects`, `list-services`, `deploy`, `set-variables`, `generate-domain`), install the [Railway CLI](https://docs.railway.com/guides/cli) and run `railway login` and `railway link` in this repo so the MCP can talk to your project.
 

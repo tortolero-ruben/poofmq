@@ -3,7 +3,7 @@
 	ci-test-go-unit ci-test-go-integration \
 	proto-generate proto-deps proto-check-generated generate-artifacts ci-check-generated \
 	openapi-publish sdk-generate setup-hooks \
-	railway-add-redis railway-add-databases
+	railway-add-redis railway-add-databases railway-set-worker-cron-vars
 
 BUF_VERSION ?= 1.53.0
 BUF_IMAGE ?= bufbuild/buf:$(BUF_VERSION)
@@ -98,3 +98,6 @@ railway-add-redis:
 
 railway-add-databases:
 	chmod +x railway/add-redis.sh && ./railway/add-redis.sh --postgres
+
+railway-set-worker-cron-vars:
+	chmod +x railway/set-worker-cron-variables.sh && ./railway/set-worker-cron-variables.sh

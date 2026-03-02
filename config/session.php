@@ -18,7 +18,8 @@ return [
     |
     */
 
-    'driver' => env('SESSION_DRIVER', 'database'),
+    // Default to array when no DB so deploy healthchecks can pass before Postgres is attached.
+    'driver' => env('SESSION_DRIVER', env('DB_URL') ? 'database' : 'array'),
 
     /*
     |--------------------------------------------------------------------------

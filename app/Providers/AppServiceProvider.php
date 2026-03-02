@@ -4,8 +4,11 @@ namespace App\Providers;
 
 use App\Services\TurnstileService;
 use Carbon\CarbonImmutable;
+use Illuminate\Foundation\Events\DiagnosingHealth;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\Redis;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Validation\Rules\Password;
 
@@ -25,6 +28,24 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         $this->configureDefaults();
+        $this->registerHealthChecks();
+    }
+
+    /**
+     * Register health check listeners so /up verifies database and Redis when in use.
+     */
+    protected function registerHealthChecks(): void
+    {
+        Event::listen(DiagnosingHealth::class, function (): void {
+            $connection = config('database.default');
+            if ($connection !== 'sqlite' && $connection !== null) {
+                DB::connection()->getPdo();
+            }
+
+            if (config('cache.default') === 'redis' || config('queue.default') === 'redis') {
+                Redis::connection()->ping();
+            }
+        });
     }
 
     /**

@@ -32,7 +32,7 @@ it('includes observability metrics and alert payload in dashboard props', functi
 
     $response->assertOk();
 
-    expect($response->inertiaProps('observability.metrics.throughput_per_minute'))->toBe(220)
+    expect($response->inertiaProps('observability.metrics.ops_total'))->toBe(220)
         ->and($response->inertiaProps('observability.metrics.error_rate_percent'))->toBe(2.73)
         ->and($response->inertiaProps('observability.metrics.redis_memory_bytes'))->toBe(7340032)
         ->and($response->inertiaProps('observability.metrics.burn_rate_cents_per_day'))->toBeGreaterThan(0)

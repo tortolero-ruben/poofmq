@@ -14,4 +14,5 @@ Route::post('/sandbox/queues', [SandboxQueueController::class, 'store'])
     ->name('api.sandbox.queues.store');
 
 Route::post('/donations/webhooks', [DonationWebhookController::class, 'store'])
+    ->middleware('throttle:60,1')
     ->name('api.donations.webhooks.store');

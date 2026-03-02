@@ -19,7 +19,7 @@ class ObservabilityService
      *
      * @return array{
      *     metrics: array{
-     *         throughput_per_minute: int,
+     *         ops_total: int,
      *         error_rate_percent: float,
      *         avg_push_latency_ms: float,
      *         avg_pop_latency_ms: float,
@@ -38,12 +38,12 @@ class ObservabilityService
         $popTotal = (int) ($goMetrics['pop_total'] ?? 0);
         $popErrors = (int) ($goMetrics['pop_errors_total'] ?? 0);
 
-        $throughput = $pushTotal + $popTotal;
+        $opsTotal = $pushTotal + $popTotal;
         $totalErrors = $pushErrors + $popErrors;
-        $errorRatePercent = $throughput > 0 ? round(($totalErrors / $throughput) * 100, 2) : 0.0;
+        $errorRatePercent = $opsTotal > 0 ? round(($totalErrors / $opsTotal) * 100, 2) : 0.0;
 
         $metrics = [
-            'throughput_per_minute' => $throughput,
+            'ops_total' => $opsTotal,
             'error_rate_percent' => $errorRatePercent,
             'avg_push_latency_ms' => round((float) ($goMetrics['avg_push_latency_ms'] ?? 0.0), 2),
             'avg_pop_latency_ms' => round((float) ($goMetrics['avg_pop_latency_ms'] ?? 0.0), 2),

@@ -77,6 +77,7 @@ ci-check-generated:
 
 setup-hooks:
 	@echo "Setting up git hooks..."
-	@cp scripts/git-hooks/pre-commit .git/hooks/pre-commit
-	@chmod +x .git/hooks/pre-commit
-	@echo "✓ Pre-commit hook installed. Go vet/test will run before commits."
+	@hooks_dir="$$(git rev-parse --git-path hooks)"; \
+	cp scripts/git-hooks/pre-commit "$$hooks_dir/pre-commit"; \
+	chmod +x "$$hooks_dir/pre-commit"
+	@echo "✓ Pre-commit hook installed. Frontend and Go checks will run before commits."

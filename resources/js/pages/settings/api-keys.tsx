@@ -1,5 +1,5 @@
 import { Head, Link } from '@inertiajs/react';
-import type { FormEvent} from 'react';
+import type { FormEvent } from 'react';
 import { useMemo, useState } from 'react';
 import Heading from '@/components/heading';
 import InputError from '@/components/input-error';
@@ -66,10 +66,7 @@ function mapValidationErrors(
     );
 }
 
-export default function ApiKeys({
-    apiKeys: initialApiKeys,
-    projects,
-}: Props) {
+export default function ApiKeys({ apiKeys: initialApiKeys, projects }: Props) {
     const [apiKeys, setApiKeys] = useState<ApiKeyRecord[]>(initialApiKeys);
     const [name, setName] = useState<string>('');
     const [projectId, setProjectId] = useState<string>('');
@@ -110,7 +107,9 @@ export default function ApiKeys({
 
             if (response.status === 422) {
                 setErrors(
-                    mapValidationErrors(payload.errors as ValidationErrors | undefined),
+                    mapValidationErrors(
+                        payload.errors as ValidationErrors | undefined,
+                    ),
                 );
 
                 return;
@@ -208,7 +207,7 @@ export default function ApiKeys({
                                 description="For security, this plain text key is shown once and cannot be retrieved later."
                             />
 
-                            <p className="break-all rounded-md border bg-background px-3 py-2 font-mono text-sm">
+                            <p className="rounded-md border bg-background px-3 py-2 font-mono text-sm break-all">
                                 {plainTextKey}
                             </p>
 
@@ -231,7 +230,10 @@ export default function ApiKeys({
                             description="Assign keys to projects to isolate usage and revoke access quickly."
                         />
 
-                        <form className="space-y-4" onSubmit={handleCreateApiKey}>
+                        <form
+                            className="space-y-4"
+                            onSubmit={handleCreateApiKey}
+                        >
                             <div className="grid gap-2">
                                 <Label htmlFor="api_key_name">Name</Label>
                                 <Input
@@ -254,11 +256,14 @@ export default function ApiKeys({
                                     onChange={(event) =>
                                         setProjectId(event.target.value)
                                     }
-                                    className="flex h-10 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs outline-none transition-[color,box-shadow] focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
+                                    className="flex h-10 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs transition-[color,box-shadow] outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
                                 >
                                     <option value="">No project</option>
                                     {projects.map((project) => (
-                                        <option key={project.id} value={project.id}>
+                                        <option
+                                            key={project.id}
+                                            value={project.id}
+                                        >
                                             {project.name}
                                         </option>
                                     ))}
@@ -293,7 +298,9 @@ export default function ApiKeys({
                             </div>
 
                             <Button type="submit" disabled={isCreating}>
-                                {isCreating ? 'Generating...' : 'Generate API key'}
+                                {isCreating
+                                    ? 'Generating...'
+                                    : 'Generate API key'}
                             </Button>
                         </form>
                     </section>
@@ -317,7 +324,9 @@ export default function ApiKeys({
                                 className="space-y-3 rounded-xl border border-sidebar-border/70 p-4"
                             >
                                 <div className="flex flex-wrap items-center gap-2">
-                                    <h3 className="font-medium">{apiKey.name}</h3>
+                                    <h3 className="font-medium">
+                                        {apiKey.name}
+                                    </h3>
                                     <Badge
                                         variant={
                                             apiKey.is_valid

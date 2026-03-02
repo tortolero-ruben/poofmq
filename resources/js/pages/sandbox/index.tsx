@@ -1,5 +1,5 @@
 import { Head, Link } from '@inertiajs/react';
-import type { FormEvent} from 'react';
+import type { FormEvent } from 'react';
 import { useMemo, useState } from 'react';
 import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
@@ -143,7 +143,7 @@ export default function SandboxCreatePage() {
                         <p className="text-xs font-medium text-muted-foreground">
                             Queue ID
                         </p>
-                        <p className="break-all rounded-md border bg-muted/20 px-3 py-2 font-mono text-sm">
+                        <p className="rounded-md border bg-muted/20 px-3 py-2 font-mono text-sm break-all">
                             {queue.queue_id}
                         </p>
                         <Button
@@ -161,7 +161,7 @@ export default function SandboxCreatePage() {
                         <p className="text-xs font-medium text-muted-foreground">
                             Queue URL
                         </p>
-                        <p className="break-all rounded-md border bg-muted/20 px-3 py-2 font-mono text-sm">
+                        <p className="rounded-md border bg-muted/20 px-3 py-2 font-mono text-sm break-all">
                             {queue.queue_url}
                         </p>
                         <Button

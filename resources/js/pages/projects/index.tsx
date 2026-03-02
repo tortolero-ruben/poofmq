@@ -1,5 +1,5 @@
 import { Head } from '@inertiajs/react';
-import type { FormEvent} from 'react';
+import type { FormEvent } from 'react';
 import { useState } from 'react';
 import Heading from '@/components/heading';
 import InputError from '@/components/input-error';
@@ -71,7 +71,14 @@ export default function Projects({ projects: initialProjects }: Props) {
         useState<string>('');
     const [editingProjects, setEditingProjects] = useState<
         Record<string, EditableProject>
-    >(Object.fromEntries(initialProjects.map((project) => [project.id, editableProject(project)])));
+    >(
+        Object.fromEntries(
+            initialProjects.map((project) => [
+                project.id,
+                editableProject(project),
+            ]),
+        ),
+    );
     const [createErrors, setCreateErrors] = useState<Record<string, string>>(
         {},
     );
@@ -107,21 +114,28 @@ export default function Projects({ projects: initialProjects }: Props) {
 
             if (response.status === 422) {
                 setCreateErrors(
-                    mapValidationErrors(payload.errors as ValidationErrors | undefined),
+                    mapValidationErrors(
+                        payload.errors as ValidationErrors | undefined,
+                    ),
                 );
 
                 return;
             }
 
             if (!response.ok) {
-                setCreateErrors({ name: 'Unable to create the project right now.' });
+                setCreateErrors({
+                    name: 'Unable to create the project right now.',
+                });
 
                 return;
             }
 
             const createdProject = payload.project as Project;
 
-            setProjects((currentProjects) => [createdProject, ...currentProjects]);
+            setProjects((currentProjects) => [
+                createdProject,
+                ...currentProjects,
+            ]);
             setEditingProjects((currentProjects) => ({
                 ...currentProjects,
                 [createdProject.id]: editableProject(createdProject),
@@ -143,7 +157,10 @@ export default function Projects({ projects: initialProjects }: Props) {
         setEditingProjects((currentProjects) => ({
             ...currentProjects,
             [projectId]: {
-                ...(currentProjects[projectId] ?? { name: '', description: '' }),
+                ...(currentProjects[projectId] ?? {
+                    name: '',
+                    description: '',
+                }),
                 [field]: value,
             },
         }));
@@ -158,7 +175,8 @@ export default function Projects({ projects: initialProjects }: Props) {
         setStatusMessage(null);
         setUpdatingProjectId(project.id);
 
-        const editable = editingProjects[project.id] ?? editableProject(project);
+        const editable =
+            editingProjects[project.id] ?? editableProject(project);
 
         try {
             const response = await fetch(updateProject.url(project.id), {
@@ -303,7 +321,7 @@ export default function Projects({ projects: initialProjects }: Props) {
                                 onChange={(event) =>
                                     setNewProjectDescription(event.target.value)
                                 }
-                                className="flex min-h-16 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs outline-none transition-[color,box-shadow] placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
+                                className="flex min-h-16 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs transition-[color,box-shadow] outline-none placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
                                 placeholder="Internal event queue for background workers"
                             />
                             <InputError message={createErrors.description} />
@@ -332,7 +350,8 @@ export default function Projects({ projects: initialProjects }: Props) {
 
                     {projects.map((project) => {
                         const editable =
-                            editingProjects[project.id] ?? editableProject(project);
+                            editingProjects[project.id] ??
+                            editableProject(project);
                         const projectErrors = updateErrors[project.id] ?? {};
 
                         return (
@@ -344,7 +363,9 @@ export default function Projects({ projects: initialProjects }: Props) {
                                 className="space-y-4 rounded-xl border border-sidebar-border/70 p-4"
                             >
                                 <div className="grid gap-2">
-                                    <Label htmlFor={`project_name_${project.id}`}>
+                                    <Label
+                                        htmlFor={`project_name_${project.id}`}
+                                    >
                                         Name
                                     </Label>
                                     <Input
@@ -379,7 +400,7 @@ export default function Projects({ projects: initialProjects }: Props) {
                                                 event.target.value,
                                             )
                                         }
-                                        className="flex min-h-16 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs outline-none transition-[color,box-shadow] placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
+                                        className="flex min-h-16 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs transition-[color,box-shadow] outline-none placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
                                     />
                                     <InputError
                                         message={projectErrors.description}
@@ -389,7 +410,9 @@ export default function Projects({ projects: initialProjects }: Props) {
                                 <div className="flex flex-wrap gap-2">
                                     <Button
                                         type="submit"
-                                        disabled={updatingProjectId === project.id}
+                                        disabled={
+                                            updatingProjectId === project.id
+                                        }
                                     >
                                         {updatingProjectId === project.id
                                             ? 'Saving...'
@@ -398,7 +421,9 @@ export default function Projects({ projects: initialProjects }: Props) {
                                     <Button
                                         type="button"
                                         variant="destructive"
-                                        disabled={archivingProjectId === project.id}
+                                        disabled={
+                                            archivingProjectId === project.id
+                                        }
                                         onClick={() =>
                                             handleArchiveProject(project.id)
                                         }

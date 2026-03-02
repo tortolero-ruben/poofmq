@@ -112,4 +112,42 @@ class ApiKey extends Model
     {
         return ! $this->isExpired() && ! $this->isRevoked();
     }
+
+    /**
+     * Scope a query to only include active (valid) API keys.
+     *
+     * @param  \Illuminate\Database\Eloquent\Builder<self>  $query
+     * @return \Illuminate\Database\Eloquent\Builder<self>
+     */
+    public function scopeActive($query): \Illuminate\Database\Eloquent\Builder
+    {
+        return $query->whereNull('revoked_at')
+            ->where(function ($query) {
+                $query->whereNull('expires_at')
+                    ->orWhere('expires_at', '>', now());
+            });
+    }
+
+    /**
+     * Scope a query to only include revoked API keys.
+     *
+     * @param  \Illuminate\Database\Eloquent\Builder<self>  $query
+     * @return \Illuminate\Database\Eloquent\Builder<self>
+     */
+    public function scopeRevoked($query): \Illuminate\Database\Eloquent\Builder
+    {
+        return $query->whereNotNull('revoked_at');
+    }
+
+    /**
+     * Scope a query to only include expired API keys.
+     *
+     * @param  \Illuminate\Database\Eloquent\Builder<self>  $query
+     * @return \Illuminate\Database\Eloquent\Builder<self>
+     */
+    public function scopeExpired($query): \Illuminate\Database\Eloquent\Builder
+    {
+        return $query->whereNotNull('expires_at')
+            ->where('expires_at', '<=', now());
+    }
 }

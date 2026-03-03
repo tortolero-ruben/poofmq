@@ -1,0 +1,9 @@
+{
+  "$schema": "https://schema.railpack.com",
+  "deploy": {
+    "variables": {
+      "RAILPACK_PHP_ROOT_DIR": "/app/public",
+      "RAILPACK_SKIP_MIGRATIONS": "true"
+    }
+  }
+}

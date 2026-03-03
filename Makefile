@@ -2,7 +2,8 @@
 	ci-lint-laravel ci-lint-frontend ci-lint-go ci-test-laravel ci-test-go \
 	ci-test-go-unit ci-test-go-integration \
 	proto-generate proto-deps proto-check-generated generate-artifacts ci-check-generated \
-	openapi-publish sdk-generate setup-hooks
+	openapi-publish sdk-generate setup-hooks \
+	railway-add-redis railway-add-databases railway-set-worker-cron-vars
 
 BUF_VERSION ?= 1.53.0
 BUF_IMAGE ?= bufbuild/buf:$(BUF_VERSION)
@@ -91,3 +92,12 @@ setup-hooks:
 	cp scripts/git-hooks/pre-commit "$$hooks_dir/pre-commit"; \
 	chmod +x "$$hooks_dir/pre-commit"
 	@echo "✓ Pre-commit hook installed. Frontend and Go checks will run before commits."
+
+railway-add-redis:
+	chmod +x railway/add-redis.sh && ./railway/add-redis.sh
+
+railway-add-databases:
+	chmod +x railway/add-redis.sh && ./railway/add-redis.sh --postgres
+
+railway-set-worker-cron-vars:
+	chmod +x railway/set-worker-cron-variables.sh && ./railway/set-worker-cron-variables.sh

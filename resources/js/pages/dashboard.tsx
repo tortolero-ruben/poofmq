@@ -118,60 +118,77 @@ export default function Dashboard({
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Dashboard" />
 
-            <div className="space-y-4 p-4">
-                <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+            <div className="space-y-6 p-6">
+                <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
                     <Card>
                         <CardHeader>
-                            <CardTitle>Funding</CardTitle>
+                            <CardTitle>FUNDING</CardTitle>
                             <CardDescription>
                                 Donation ledger aggregate
                             </CardDescription>
                         </CardHeader>
-                        <CardContent className="space-y-1 text-sm">
+                        <CardContent className="space-y-2 font-mono text-sm">
                             <p>
-                                Net:{' '}
-                                {formatCents(funding.summary.net_funding_cents)}
+                                <span className="text-white/50">NET:</span>{' '}
+                                <span className="text-[#FFBF00]">
+                                    {formatCents(
+                                        funding.summary.net_funding_cents,
+                                    )}
+                                </span>
                             </p>
                             <p>
-                                Gross:{' '}
+                                <span className="text-white/50">GROSS:</span>{' '}
                                 {formatCents(
                                     funding.summary.gross_donations_cents,
                                 )}
                             </p>
                             <p>
-                                Refunds:{' '}
+                                <span className="text-white/50">REFUNDS:</span>{' '}
                                 {formatCents(funding.summary.refunds_cents)}
                             </p>
-                            <p>Events: {funding.summary.event_count}</p>
+                            <p>
+                                <span className="text-white/50">EVENTS:</span>{' '}
+                                {funding.summary.event_count}
+                            </p>
                         </CardContent>
                     </Card>
 
                     <Card>
                         <CardHeader>
-                            <CardTitle>Railway Billing</CardTitle>
+                            <CardTitle>RAILWAY_BILLING</CardTitle>
                             <CardDescription>
                                 Latest balance and runway
                             </CardDescription>
                         </CardHeader>
-                        <CardContent className="space-y-1 text-sm">
+                        <CardContent className="space-y-2 font-mono text-sm">
                             {billingLatest === null ? (
-                                <p>No billing snapshots yet.</p>
+                                <p className="text-white/50">
+                                    No billing snapshots yet.
+                                </p>
                             ) : (
                                 <>
                                     <p>
-                                        Balance:{' '}
-                                        {formatCents(
-                                            billingLatest.balance_cents,
-                                        )}
+                                        <span className="text-white/50">
+                                            BALANCE:
+                                        </span>{' '}
+                                        <span className="text-[#FFBF00]">
+                                            {formatCents(
+                                                billingLatest.balance_cents,
+                                            )}
+                                        </span>
                                     </p>
                                     <p>
-                                        Spend MTD:{' '}
+                                        <span className="text-white/50">
+                                            SPEND_MTD:
+                                        </span>{' '}
                                         {formatCents(
                                             billingLatest.month_to_date_spend_cents,
                                         )}
                                     </p>
                                     <p>
-                                        Runway:{' '}
+                                        <span className="text-white/50">
+                                            RUNWAY:
+                                        </span>{' '}
                                         {billingLatest.runway_months.toFixed(2)}{' '}
                                         months
                                     </p>
@@ -182,51 +199,62 @@ export default function Dashboard({
 
                     <Card>
                         <CardHeader>
-                            <CardTitle>Capacity Limit</CardTitle>
+                            <CardTitle>CAPACITY_LIMIT</CardTitle>
                             <CardDescription>
-                                Active Month Boost controls
+                                Active rate limit controls
                             </CardDescription>
                         </CardHeader>
-                        <CardContent className="space-y-1 text-sm">
+                        <CardContent className="space-y-2 font-mono text-sm">
                             <p>
-                                Effective: {capacity.effective_limit_per_minute}{' '}
+                                <span className="text-white/50">
+                                    EFFECTIVE:
+                                </span>{' '}
+                                <span className="text-[#FFBF00]">
+                                    {capacity.effective_limit_per_minute}
+                                </span>{' '}
                                 req/min
                             </p>
                             <p>
-                                Baseline: {capacity.base_limit_per_minute}{' '}
-                                req/min
+                                <span className="text-white/50">BASELINE:</span>{' '}
+                                {capacity.base_limit_per_minute} req/min
                             </p>
                             {capacity.is_boost_active ? (
-                                <Badge variant="secondary">
-                                    Boost x{capacity.boost_multiplier}
+                                <Badge variant="default">
+                                    BOOST x{capacity.boost_multiplier}
                                 </Badge>
                             ) : (
-                                <Badge variant="outline">No active boost</Badge>
+                                <Badge variant="outline">NO_ACTIVE_BOOST</Badge>
                             )}
                         </CardContent>
                     </Card>
 
                     <Card>
                         <CardHeader>
-                            <CardTitle>Observability</CardTitle>
+                            <CardTitle>OBSERVABILITY</CardTitle>
                             <CardDescription>
                                 Runtime SLO indicators
                             </CardDescription>
                         </CardHeader>
-                        <CardContent className="space-y-1 text-sm">
+                        <CardContent className="space-y-2 font-mono text-sm">
                             <p>
-                                Throughput Total:{' '}
+                                <span className="text-white/50">
+                                    THROUGHPUT:
+                                </span>{' '}
                                 {observability.metrics.throughput_total} ops
                             </p>
                             <p>
-                                Error rate:{' '}
+                                <span className="text-white/50">
+                                    ERROR_RATE:
+                                </span>{' '}
                                 {observability.metrics.error_rate_percent.toFixed(
                                     2,
                                 )}
                                 %
                             </p>
                             <p>
-                                Redis memory:{' '}
+                                <span className="text-white/50">
+                                    REDIS_MEM:
+                                </span>{' '}
                                 {formatBytes(
                                     observability.metrics.redis_memory_bytes,
                                 )}
@@ -235,29 +263,29 @@ export default function Dashboard({
                     </Card>
                 </div>
 
-                <div className="grid gap-4 xl:grid-cols-2">
+                <div className="grid gap-6 xl:grid-cols-2">
                     <Card>
                         <CardHeader>
-                            <CardTitle>Funding History</CardTitle>
+                            <CardTitle>FUNDING_HISTORY</CardTitle>
                             <CardDescription>
                                 Most recent donation ledger entries
                             </CardDescription>
                         </CardHeader>
-                        <CardContent className="space-y-2">
+                        <CardContent className="space-y-3">
                             {funding.history.length === 0 ? (
-                                <p className="text-sm text-muted-foreground">
+                                <p className="text-sm text-white/50">
                                     No donation ledger entries yet.
                                 </p>
                             ) : (
                                 funding.history.map((entry) => (
                                     <div
                                         key={entry.id}
-                                        className="rounded-md border px-3 py-2 text-sm"
+                                        className="border-2 border-white/20 px-4 py-3 font-mono text-sm"
                                     >
-                                        <p className="font-medium">
+                                        <p className="font-bold uppercase">
                                             {entry.event_type}
                                         </p>
-                                        <p className="text-muted-foreground">
+                                        <p className="text-white/60">
                                             {formatCents(entry.amount_cents)}{' '}
                                             via {entry.provider}
                                         </p>
@@ -269,23 +297,23 @@ export default function Dashboard({
 
                     <Card>
                         <CardHeader>
-                            <CardTitle>Active Alerts</CardTitle>
+                            <CardTitle>ACTIVE_ALERTS</CardTitle>
                             <CardDescription>
                                 Threshold-driven operational alerts
                             </CardDescription>
                         </CardHeader>
-                        <CardContent className="space-y-2">
+                        <CardContent className="space-y-3">
                             {observability.alerts.length === 0 ? (
-                                <p className="text-sm text-muted-foreground">
+                                <p className="text-sm text-white/50">
                                     No active alerts.
                                 </p>
                             ) : (
                                 observability.alerts.map((alert) => (
                                     <div
                                         key={alert.key}
-                                        className="rounded-md border px-3 py-2 text-sm"
+                                        className="border-2 border-white/20 px-4 py-3 font-mono text-sm"
                                     >
-                                        <div className="mb-1 flex items-center gap-2">
+                                        <div className="mb-2 flex items-center gap-2">
                                             <Badge
                                                 variant={
                                                     alert.severity ===
@@ -294,14 +322,14 @@ export default function Dashboard({
                                                         : 'secondary'
                                                 }
                                             >
-                                                {alert.severity}
+                                                {alert.severity.toUpperCase()}
                                             </Badge>
-                                            <span className="font-medium">
+                                            <span className="font-bold uppercase">
                                                 {alert.key}
                                             </span>
                                         </div>
                                         <p>{alert.message}</p>
-                                        <p className="text-muted-foreground">
+                                        <p className="text-xs text-white/50">
                                             {alert.runbook}
                                         </p>
                                     </div>

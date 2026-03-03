@@ -20,84 +20,91 @@ export default function Developers() {
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Developers" />
             <div
-                className="flex h-full flex-1 flex-col gap-6 overflow-x-auto rounded-xl p-4"
+                className="flex h-full flex-1 flex-col gap-6 p-6"
                 data-testid="developers-page"
             >
                 <div>
                     <h1
-                        className="text-2xl font-semibold tracking-tight"
+                        className="text-2xl font-bold tracking-wide uppercase"
                         id="developers-heading"
                     >
-                        Developers
+                        DEVELOPERS
                     </h1>
-                    <p className="mt-1 text-muted-foreground">
+                    <p className="mt-1 text-white/60">
                         Quickstart and SDK docs for the poofMQ API.
                     </p>
                 </div>
                 <div className="grid gap-4 md:grid-cols-2">
-                    <div
-                        className="flex items-center gap-3 rounded-lg border border-sidebar-border/70 bg-card p-4 dark:border-sidebar-border"
+                    <a
+                        href={QUICKSTART_URL}
+                        rel="noreferrer"
+                        target="_blank"
+                        className="group border-4 border-white bg-[#0a0a0a] p-6 transition-colors hover:bg-[#FFBF00] hover:text-black"
                         data-testid="quickstart-link"
                     >
-                        <BookOpen className="size-8 text-muted-foreground" />
-                        <div>
-                            <span className="font-medium">Quickstart</span>
-                            <p className="text-sm text-muted-foreground">
-                                See{' '}
-                                <a
-                                    className="font-medium underline underline-offset-2"
-                                    href={QUICKSTART_URL}
-                                    rel="noreferrer"
-                                    target="_blank"
-                                >
-                                    docs/quickstart.md
-                                </a>{' '}
-                                for API base URL, Node and Python snippets.
-                            </p>
+                        <div className="flex items-start gap-4">
+                            <BookOpen className="size-8 text-[#FFBF00] group-hover:text-black" />
+                            <div>
+                                <span className="font-bold uppercase">
+                                    QUICKSTART
+                                </span>
+                                <p className="mt-2 text-sm text-white/60 group-hover:text-black/70">
+                                    See{' '}
+                                    <span className="font-mono">
+                                        docs/quickstart.md
+                                    </span>{' '}
+                                    for API base URL, Node and Python snippets.
+                                </p>
+                            </div>
                         </div>
-                    </div>
-                    <div
-                        className="flex items-center gap-3 rounded-lg border border-sidebar-border/70 bg-card p-4 dark:border-sidebar-border"
+                    </a>
+                    <a
+                        href={NODE_SDK_URL}
+                        rel="noreferrer"
+                        target="_blank"
+                        className="group border-4 border-white bg-[#0a0a0a] p-6 transition-colors hover:bg-[#FFBF00] hover:text-black"
                         data-testid="node-sdk-link"
                     >
-                        <Code2 className="size-8 text-muted-foreground" />
-                        <div>
-                            <span className="font-medium">Node.js SDK</span>
-                            <p className="text-sm text-muted-foreground">
-                                See{' '}
-                                <a
-                                    className="font-medium underline underline-offset-2"
-                                    href={NODE_SDK_URL}
-                                    rel="noreferrer"
-                                    target="_blank"
-                                >
-                                    sdks/node/README.md
-                                </a>{' '}
-                                for TypeScript/JavaScript client and encryption.
-                            </p>
+                        <div className="flex items-start gap-4">
+                            <Code2 className="size-8 text-[#FFBF00] group-hover:text-black" />
+                            <div>
+                                <span className="font-bold uppercase">
+                                    NODE_JS_SDK
+                                </span>
+                                <p className="mt-2 text-sm text-white/60 group-hover:text-black/70">
+                                    See{' '}
+                                    <span className="font-mono">
+                                        sdks/node/README.md
+                                    </span>{' '}
+                                    for TypeScript/JavaScript client and
+                                    encryption.
+                                </p>
+                            </div>
                         </div>
-                    </div>
-                    <div
-                        className="flex items-center gap-3 rounded-lg border border-sidebar-border/70 bg-card p-4 dark:border-sidebar-border"
+                    </a>
+                    <a
+                        href={PYTHON_SDK_URL}
+                        rel="noreferrer"
+                        target="_blank"
+                        className="group border-4 border-white bg-[#0a0a0a] p-6 transition-colors hover:bg-[#FFBF00] hover:text-black"
                         data-testid="python-sdk-link"
                     >
-                        <FileCode className="size-8 text-muted-foreground" />
-                        <div>
-                            <span className="font-medium">Python SDK</span>
-                            <p className="text-sm text-muted-foreground">
-                                See{' '}
-                                <a
-                                    className="font-medium underline underline-offset-2"
-                                    href={PYTHON_SDK_URL}
-                                    rel="noreferrer"
-                                    target="_blank"
-                                >
-                                    sdks/python/README.md
-                                </a>{' '}
-                                for Python client and encryption.
-                            </p>
+                        <div className="flex items-start gap-4">
+                            <FileCode className="size-8 text-[#FFBF00] group-hover:text-black" />
+                            <div>
+                                <span className="font-bold uppercase">
+                                    PYTHON_SDK
+                                </span>
+                                <p className="mt-2 text-sm text-white/60 group-hover:text-black/70">
+                                    See{' '}
+                                    <span className="font-mono">
+                                        sdks/python/README.md
+                                    </span>{' '}
+                                    for Python client and encryption.
+                                </p>
+                            </div>
                         </div>
-                    </div>
+                    </a>
                 </div>
             </div>
         </AppLayout>

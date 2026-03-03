@@ -5,18 +5,18 @@ import * as React from "react"
 import { cn } from "@/lib/utils"
 
 const toggleVariants = cva(
-  "inline-flex items-center justify-center gap-2 rounded-md text-sm font-medium hover:bg-muted hover:text-muted-foreground disabled:pointer-events-none disabled:opacity-50 data-[state=on]:bg-accent data-[state=on]:text-accent-foreground [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 [&_svg]:shrink-0 focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] outline-none transition-[color,box-shadow] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive",
+  "inline-flex items-center justify-center gap-2 text-sm font-bold uppercase tracking-wide transition-all disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 [&_svg]:shrink-0 outline-none focus-visible:ring-2 focus-visible:ring-[#FFBF00] focus-visible:ring-offset-2 focus-visible:ring-offset-black",
   {
     variants: {
       variant: {
-        default: "bg-transparent",
+        default: "border-4 border-white bg-transparent text-white hover:bg-white/10 data-[state=on]:bg-[#FFBF00] data-[state=on]:text-black data-[state=on]:border-[#FFBF00]",
         outline:
-          "border border-input bg-transparent shadow-xs hover:bg-accent hover:text-accent-foreground",
+          "border-4 border-white/40 bg-transparent text-white/70 hover:border-white hover:text-white data-[state=on]:bg-[#FFBF00] data-[state=on]:text-black data-[state=on]:border-[#FFBF00]",
       },
       size: {
-        default: "h-9 px-2 min-w-9",
-        sm: "h-8 px-1.5 min-w-8",
-        lg: "h-10 px-2.5 min-w-10",
+        default: "h-10 px-4 min-w-10",
+        sm: "h-8 px-3 min-w-8 text-xs",
+        lg: "h-12 px-6 min-w-12 text-base",
       },
     },
     defaultVariants: {

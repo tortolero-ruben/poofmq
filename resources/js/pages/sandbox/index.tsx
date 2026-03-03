@@ -96,7 +96,7 @@ export default function SandboxCreatePage() {
 
             setQueue(payload as SandboxQueueResponse);
             setErrors({});
-            setStatusMessage('Sandbox queue created successfully.');
+            setStatusMessage('SANDBOX_QUEUE_CREATED_SUCCESSFULLY');
         } finally {
             setIsSubmitting(false);
         }
@@ -104,14 +104,14 @@ export default function SandboxCreatePage() {
 
     return (
         <AuthLayout
-            title="Sandbox queue"
-            description="Create a temporary queue for quick tests with Turnstile protection."
+            title="SANDBOX_QUEUE"
+            description="Create a temporary queue for quick tests"
         >
-            <Head title="Sandbox queue" />
+            <Head title="Sandbox Queue" />
 
-            <form className="space-y-4" onSubmit={handleCreateSandboxQueue}>
+            <form className="space-y-6" onSubmit={handleCreateSandboxQueue}>
                 <div className="grid gap-2">
-                    <Label htmlFor="turnstile_token">Turnstile token</Label>
+                    <Label htmlFor="turnstile_token">TURNSTILE_TOKEN</Label>
                     <Input
                         id="turnstile_token"
                         value={turnstileToken}
@@ -126,61 +126,68 @@ export default function SandboxCreatePage() {
 
                 <Button type="submit" disabled={isSubmitting}>
                     {isSubmitting
-                        ? 'Creating queue...'
-                        : 'Create sandbox queue'}
+                        ? 'CREATING_QUEUE...'
+                        : 'CREATE_SANDBOX_QUEUE'}
                 </Button>
             </form>
 
             {statusMessage !== null && (
-                <p className="mt-4 text-sm font-medium text-green-600">
-                    {statusMessage}
-                </p>
+                <div className="mt-6 border-4 border-green-500 bg-green-500/10 p-4">
+                    <p className="font-bold text-green-400 uppercase">
+                        {statusMessage}
+                    </p>
+                </div>
             )}
 
             {queue !== null && (
-                <section className="mt-6 space-y-3 rounded-xl border border-sidebar-border/70 p-4">
-                    <div className="space-y-1">
-                        <p className="text-xs font-medium text-muted-foreground">
-                            Queue ID
+                <section className="mt-6 space-y-4 border-4 border-white bg-[#0a0a0a] p-4">
+                    <div className="space-y-2">
+                        <p className="text-xs font-bold text-white/50 uppercase">
+                            QUEUE_ID
                         </p>
-                        <p className="rounded-md border bg-muted/20 px-3 py-2 font-mono text-sm break-all">
+                        <div className="border-2 border-white/20 bg-black px-4 py-2 font-mono text-sm break-all">
                             {queue.queue_id}
-                        </p>
+                        </div>
                         <Button
                             type="button"
-                            variant="secondary"
+                            variant="outline"
+                            size="sm"
                             onClick={() => {
                                 void copyToClipboard(queue.queue_id);
                             }}
                         >
-                            {copiedId ? 'Copied ID' : 'Copy ID'}
+                            {copiedId ? 'COPIED_ID' : 'COPY_ID'}
                         </Button>
                     </div>
 
-                    <div className="space-y-1">
-                        <p className="text-xs font-medium text-muted-foreground">
-                            Queue URL
+                    <div className="space-y-2">
+                        <p className="text-xs font-bold text-white/50 uppercase">
+                            QUEUE_URL
                         </p>
-                        <p className="rounded-md border bg-muted/20 px-3 py-2 font-mono text-sm break-all">
+                        <div className="border-2 border-white/20 bg-black px-4 py-2 font-mono text-sm break-all">
                             {queue.queue_url}
-                        </p>
+                        </div>
                         <Button
                             type="button"
-                            variant="secondary"
+                            variant="outline"
+                            size="sm"
                             onClick={() => {
                                 void copyToClipboard(queue.queue_url);
                             }}
                         >
-                            {copiedUrl ? 'Copied URL' : 'Copy URL'}
+                            {copiedUrl ? 'COPIED_URL' : 'COPY_URL'}
                         </Button>
                     </div>
                 </section>
             )}
 
-            <p className="mt-6 text-sm text-muted-foreground">
+            <p className="mt-6 text-sm text-white/50">
                 Need the main landing page?{' '}
-                <Link href={home()} className="underline">
-                    Go back home.
+                <Link
+                    href={home()}
+                    className="font-bold text-[#FFBF00] uppercase hover:underline"
+                >
+                    Go back home
                 </Link>
             </p>
         </AuthLayout>

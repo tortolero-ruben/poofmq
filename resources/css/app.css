@@ -8,15 +8,20 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme {
+    /* Typography */
     --font-sans:
-        'Instrument Sans', ui-sans-serif, system-ui, sans-serif,
-        'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol',
-        'Noto Color Emoji';
+        'Geist', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji',
+        'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+    --font-mono:
+        'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo,
+        Consolas, monospace;
 
+    /* Border radius */
     --radius-lg: var(--radius);
     --radius-md: calc(var(--radius) - 2px);
     --radius-sm: calc(var(--radius) - 4px);
 
+    /* Color mappings */
     --color-background: var(--background);
     --color-foreground: var(--foreground);
 
@@ -59,78 +64,89 @@
     --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
     --color-sidebar-border: var(--sidebar-border);
     --color-sidebar-ring: var(--sidebar-ring);
+
+    /* Shadows */
+    --shadow-soft: 0 4px 20px -2px rgba(0, 0, 0, 0.05);
+    --shadow-glow: 0 0 20px rgba(245, 158, 11, 0.3);
 }
 
+/*
+ * Light Theme (Default)
+ * Warm, approachable, clean
+ */
 :root {
-    --background: oklch(1 0 0);
+    --background: oklch(0.98 0 0);
     --foreground: oklch(0.145 0 0);
     --card: oklch(1 0 0);
     --card-foreground: oklch(0.145 0 0);
     --popover: oklch(1 0 0);
     --popover-foreground: oklch(0.145 0 0);
-    --primary: oklch(0.205 0 0);
-    --primary-foreground: oklch(0.985 0 0);
-    --secondary: oklch(0.97 0 0);
+    --primary: oklch(0.75 0.18 75);
+    --primary-foreground: oklch(0.145 0 0);
+    --secondary: oklch(0.96 0 0);
     --secondary-foreground: oklch(0.205 0 0);
-    --muted: oklch(0.97 0 0);
-    --muted-foreground: oklch(0.556 0 0);
-    --accent: oklch(0.97 0 0);
+    --muted: oklch(0.96 0.005 270);
+    --muted-foreground: oklch(0.45 0 0);
+    --accent: oklch(0.96 0.02 75);
     --accent-foreground: oklch(0.205 0 0);
     --destructive: oklch(0.577 0.245 27.325);
-    --destructive-foreground: oklch(0.577 0.245 27.325);
-    --border: oklch(0.922 0 0);
-    --input: oklch(0.922 0 0);
-    --ring: oklch(0.87 0 0);
-    --chart-1: oklch(0.646 0.222 41.116);
+    --destructive-foreground: oklch(0.985 0 0);
+    --border: oklch(0.9 0.005 270);
+    --input: oklch(0.9 0.005 270);
+    --ring: oklch(0.75 0.18 75);
+    --chart-1: oklch(0.75 0.18 75);
     --chart-2: oklch(0.6 0.118 184.704);
     --chart-3: oklch(0.398 0.07 227.392);
     --chart-4: oklch(0.828 0.189 84.429);
     --chart-5: oklch(0.769 0.188 70.08);
-    --radius: 0.625rem;
-    --sidebar: oklch(0.985 0 0);
+    --radius: 0.5rem;
+    --sidebar: oklch(0.98 0 0);
     --sidebar-foreground: oklch(0.145 0 0);
-    --sidebar-primary: oklch(0.205 0 0);
+    --sidebar-primary: oklch(0.75 0.18 75);
     --sidebar-primary-foreground: oklch(0.985 0 0);
-    --sidebar-accent: oklch(0.97 0 0);
+    --sidebar-accent: oklch(0.96 0.02 75);
     --sidebar-accent-foreground: oklch(0.205 0 0);
-    --sidebar-border: oklch(0.922 0 0);
-    --sidebar-ring: oklch(0.87 0 0);
+    --sidebar-border: oklch(0.9 0.005 270);
+    --sidebar-ring: oklch(0.75 0.18 75);
 }
 
-/* Brutalist Amber Dark Theme */
+/*
+ * Dark Theme
+ * Near-black background, amber accents
+ */
 .dark {
-    --background: oklch(0 0 0);
-    --foreground: oklch(1 0 0);
-    --card: oklch(0.04 0 0);
-    --card-foreground: oklch(1 0 0);
-    --popover: oklch(0 0 0);
-    --popover-foreground: oklch(1 0 0);
-    --primary: oklch(0.88 0.18 85);
-    --primary-foreground: oklch(0 0 0);
-    --secondary: oklch(0.15 0.05 270);
-    --secondary-foreground: oklch(1 0 0);
-    --muted: oklch(0.15 0 0);
-    --muted-foreground: oklch(0.7 0 0);
-    --accent: oklch(0.88 0.18 85);
-    --accent-foreground: oklch(0 0 0);
+    --background: oklch(0.1 0 0);
+    --foreground: oklch(0.98 0 0);
+    --card: oklch(0.14 0 0);
+    --card-foreground: oklch(0.98 0 0);
+    --popover: oklch(0.1 0 0);
+    --popover-foreground: oklch(0.98 0 0);
+    --primary: oklch(0.75 0.18 75);
+    --primary-foreground: oklch(0.1 0 0);
+    --secondary: oklch(0.18 0.01 270);
+    --secondary-foreground: oklch(0.98 0 0);
+    --muted: oklch(0.18 0.01 270);
+    --muted-foreground: oklch(0.65 0 0);
+    --accent: oklch(0.2 0.02 75);
+    --accent-foreground: oklch(0.98 0 0);
     --destructive: oklch(0.55 0.22 25);
-    --destructive-foreground: oklch(1 0 0);
-    --border: oklch(1 0 0);
-    --input: oklch(1 0 0);
-    --ring: oklch(0.88 0.18 85);
-    --chart-1: oklch(0.88 0.18 85);
+    --destructive-foreground: oklch(0.98 0 0);
+    --border: oklch(0.25 0.01 270);
+    --input: oklch(0.25 0.01 270);
+    --ring: oklch(0.75 0.18 75);
+    --chart-1: oklch(0.75 0.18 75);
     --chart-2: oklch(0.6 0.118 184.704);
     --chart-3: oklch(0.769 0.188 70.08);
     --chart-4: oklch(0.627 0.265 303.9);
     --chart-5: oklch(0.645 0.246 16.439);
-    --sidebar: oklch(0.08 0.05 270);
-    --sidebar-foreground: oklch(1 0 0);
-    --sidebar-primary: oklch(0.88 0.18 85);
-    --sidebar-primary-foreground: oklch(0 0 0);
-    --sidebar-accent: oklch(0.15 0.05 270);
-    --sidebar-accent-foreground: oklch(1 0 0);
-    --sidebar-border: oklch(1 0 0);
-    --sidebar-ring: oklch(0.88 0.18 85);
+    --sidebar: oklch(0.12 0.01 270);
+    --sidebar-foreground: oklch(0.98 0 0);
+    --sidebar-primary: oklch(0.75 0.18 75);
+    --sidebar-primary-foreground: oklch(0.1 0 0);
+    --sidebar-accent: oklch(0.18 0.02 270);
+    --sidebar-accent-foreground: oklch(0.98 0 0);
+    --sidebar-border: oklch(0.25 0.01 270);
+    --sidebar-ring: oklch(0.75 0.18 75);
 }
 
 @layer base {
@@ -139,27 +155,52 @@
     }
 
     body {
-        @apply bg-background text-foreground;
+        @apply bg-background text-foreground antialiased;
+        font-feature-settings:
+            'rlig' 1,
+            'calt' 1;
     }
 
-    /* Brutalist Amber Theme Scrollbar */
+    /* Selection styles - amber highlight */
+    ::selection {
+        background-color: oklch(0.75 0.18 75 / 0.3);
+        color: inherit;
+    }
+
+    .dark ::selection {
+        background-color: oklch(0.75 0.18 75 / 0.4);
+    }
+
+    /* Refined scrollbar - subtle, theme-aware */
     ::-webkit-scrollbar {
-        width: 10px;
-        background: #000000;
-    }
-
-    ::-webkit-scrollbar-thumb {
-        background: #ffbf00;
+        width: 8px;
+        height: 8px;
     }
 
     ::-webkit-scrollbar-track {
-        background: #000000;
+        background: transparent;
     }
 
-    /* Selection styles */
-    ::selection {
-        background-color: #ffbf00;
-        color: black;
+    ::-webkit-scrollbar-thumb {
+        background: oklch(0.7 0 0 / 0.3);
+        border-radius: 4px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+        background: oklch(0.7 0 0 / 0.5);
+    }
+
+    .dark ::-webkit-scrollbar-thumb {
+        background: oklch(0.4 0 0 / 0.4);
+    }
+
+    .dark ::-webkit-scrollbar-thumb:hover {
+        background: oklch(0.5 0 0 / 0.6);
+    }
+
+    /* Focus styles */
+    :focus-visible {
+        @apply ring-2 ring-ring ring-offset-2 ring-offset-background outline-none;
     }
 }
 
@@ -180,34 +221,58 @@
     -webkit-font-smoothing: antialiased;
 }
 
-/* Brutalist utility classes */
-.brutalist-border {
-    border: 4px solid white;
+/*
+ * Refined Utility Classes
+ * Simple, subtle, purposeful
+ */
+
+/* Card surfaces */
+.surface-card {
+    @apply rounded-xl border border-border bg-card;
 }
 
-.brutalist-border-primary {
-    border: 4px solid #ffbf00;
+.surface-muted {
+    @apply rounded-lg border border-border bg-muted;
 }
 
-.brutalist-border-error {
-    border: 4px solid #ef4444;
+/* Code blocks */
+.code-block {
+    @apply overflow-x-auto rounded-lg border border-border bg-muted p-4 font-mono text-sm dark:bg-card;
 }
 
-.brutalist-border-success {
-    border: 4px solid #22c55e;
+/* Interactive elements */
+.hover-lift {
+    @apply transition-transform duration-200 hover:-translate-y-0.5;
 }
 
-/* Hover effects */
-.hover-brutalist:hover {
-    background-color: #ffbf00;
-    color: black;
+.hover-glow {
+    @apply transition-shadow duration-200 hover:shadow-[0_0_20px_rgba(245,158,11,0.3)];
 }
 
-.hover-brutalist-invert:hover {
-    background-color: white;
-    color: black;
+/* Button base styles */
+.btn-primary {
+    @apply rounded-lg bg-primary px-5 py-2.5 font-semibold text-primary-foreground transition-all duration-200 hover:bg-primary/90 hover:shadow-[0_0_20px_rgba(245,158,11,0.3)] active:scale-[0.98];
 }
 
-.active-shift:active {
-    transform: translate(2px, -2px);
+.btn-secondary {
+    @apply rounded-lg border border-border bg-secondary px-5 py-2.5 font-medium text-secondary-foreground transition-all duration-200 hover:bg-muted;
+}
+
+.btn-outline {
+    @apply rounded-lg border-2 border-border bg-transparent px-5 py-2.5 font-medium text-foreground transition-all duration-200 hover:border-primary;
+}
+
+/* Section spacing */
+.section-gap {
+    @apply py-16 sm:py-24;
+}
+
+/* Text utilities */
+.text-balance {
+    text-wrap: balance;
+}
+
+/* Amber text highlight */
+.text-amber-highlight {
+    @apply text-primary;
 }

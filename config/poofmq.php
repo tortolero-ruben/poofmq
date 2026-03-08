@@ -4,6 +4,20 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Admin Emails
+    |--------------------------------------------------------------------------
+    |
+    | Users with these email addresses can access internal funding and
+    | infrastructure details that should not be visible to general users.
+    |
+    */
+    'admin_emails' => array_values(array_filter(array_map(
+        static fn (string $email): string => strtolower(trim($email)),
+        explode(',', (string) env('POOFMQ_ADMIN_EMAILS', 'rubentortolero@gmail.com'))
+    ))),
+
+    /*
+    |--------------------------------------------------------------------------
     | Redis Namespace Configuration
     |--------------------------------------------------------------------------
     |

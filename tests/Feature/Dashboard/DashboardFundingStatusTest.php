@@ -3,7 +3,7 @@
 use App\Models\DonationLedgerEntry;
 use App\Models\User;
 
-it('includes donation funding summary and history in dashboard props', function () {
+it('includes donation funding summary and omits detailed history for regular users', function () {
     $user = User::factory()->create();
 
     DonationLedgerEntry::factory()->create([
@@ -26,5 +26,5 @@ it('includes donation funding summary and history in dashboard props', function 
     expect($response->inertiaProps('funding.summary.gross_donations_cents'))->toBe(900)
         ->and($response->inertiaProps('funding.summary.refunds_cents'))->toBe(200)
         ->and($response->inertiaProps('funding.summary.net_funding_cents'))->toBe(700)
-        ->and($response->inertiaProps('funding.history'))->toHaveCount(2);
+        ->and($response->inertiaProps('admin'))->toBeNull();
 });

@@ -1,28 +1,19 @@
 <?php
 
-use App\Jobs\SyncRailwayBillingSnapshot;
-use App\Models\DonationLedgerEntry;
-use App\Models\RailwayBillingSnapshot;
-use Illuminate\Foundation\Testing\RefreshDatabase;
+use App\Services\RailwayUsageService;
 use Illuminate\Support\Facades\Http;
+use Tests\TestCase;
 
-uses(RefreshDatabase::class);
+uses(TestCase::class);
 
 beforeEach(function () {
     config()->set('services.railway.api_token', 'railway-test-token');
     config()->set('services.railway.workspace_id', 'ws_123');
     config()->set('services.railway.project_id', 'proj_123');
     config()->set('services.railway.graphql_endpoint', 'https://railway.example.test/graphql');
-    config()->set('poofmq_capacity.monthly_budget_cents', 500);
 });
 
-it('syncs the latest railway funding snapshot and computes funding gap and runway', function () {
-    DonationLedgerEntry::factory()->create([
-        'provider_event_id' => 'evt_sync',
-        'event_type' => 'donation_received',
-        'amount_cents' => 400,
-    ]);
-
+it('normalizes the railway graphql payload into snapshot attributes', function () {
     Http::fake([
         'https://railway.example.test/graphql' => Http::response([
             'data' => [
@@ -30,9 +21,9 @@ it('syncs the latest railway funding snapshot and computes funding gap and runwa
                     'id' => 'ws_123',
                     'name' => 'Workspace',
                     'customer' => [
-                        'currentUsage' => 5.5,
-                        'creditBalance' => 12.0,
-                        'appliedCredits' => 1.25,
+                        'currentUsage' => 7.25,
+                        'creditBalance' => 5.0,
+                        'appliedCredits' => 0.5,
                         'billingPeriod' => [
                             'start' => now()->startOfMonth()->toIso8601String(),
                             'end' => now()->endOfMonth()->toIso8601String(),
@@ -40,8 +31,8 @@ it('syncs the latest railway funding snapshot and computes funding gap and runwa
                         'invoices' => [
                             [
                                 'invoiceId' => 'inv_1',
-                                'total' => 900,
-                                'amountPaid' => 900,
+                                'total' => 1200,
+                                'amountPaid' => 1200,
                                 'amountDue' => 0,
                                 'periodStart' => now()->subMonth()->startOfMonth()->toDateString(),
                                 'periodEnd' => now()->subMonth()->endOfMonth()->toDateString(),
@@ -57,8 +48,8 @@ it('syncs the latest railway funding snapshot and computes funding gap and runwa
                         'edges' => [
                             [
                                 'node' => [
-                                    'id' => 'svc_redis',
-                                    'name' => 'Redis',
+                                    'id' => 'svc_1',
+                                    'name' => 'go-api',
                                 ],
                             ],
                         ],
@@ -67,18 +58,18 @@ it('syncs the latest railway funding snapshot and computes funding gap and runwa
                 'projectUsage' => [
                     [
                         'measurement' => 'CPU_USAGE',
-                        'value' => 12.45,
+                        'value' => 12.5,
                         'tags' => [
                             'environmentId' => 'env_1',
                             'projectId' => 'proj_123',
-                            'serviceId' => 'svc_redis',
+                            'serviceId' => 'svc_1',
                         ],
                     ],
                 ],
                 'workspaceUsage' => [
                     [
                         'measurement' => 'CPU_USAGE',
-                        'value' => 24.9,
+                        'value' => 25.0,
                         'tags' => [
                             'environmentId' => null,
                             'projectId' => null,
@@ -89,14 +80,14 @@ it('syncs the latest railway funding snapshot and computes funding gap and runwa
                 'projectEstimatedUsage' => [
                     [
                         'measurement' => 'CPU_USAGE',
-                        'estimatedValue' => 38.10,
+                        'estimatedValue' => 36.5,
                         'projectId' => 'proj_123',
                     ],
                 ],
                 'workspaceEstimatedUsage' => [
                     [
                         'measurement' => 'CPU_USAGE',
-                        'estimatedValue' => 76.20,
+                        'estimatedValue' => 73.0,
                         'projectId' => null,
                     ],
                 ],
@@ -104,32 +95,21 @@ it('syncs the latest railway funding snapshot and computes funding gap and runwa
         ], 200),
     ]);
 
-    $job = new SyncRailwayBillingSnapshot;
-    $this->app->call([$job, 'handle']);
+    $snapshot = app(RailwayUsageService::class)->fetchFundingSnapshot();
 
-    $snapshot = RailwayBillingSnapshot::query()->latest('captured_at')->first();
-
-    expect($snapshot)->not->toBeNull()
-        ->and($snapshot?->current_spend_cents)->toBe(550)
-        ->and($snapshot?->month_to_date_spend_cents)->toBe(550)
-        ->and($snapshot?->poofmq_attributed_current_spend_cents)->toBeGreaterThanOrEqual(0)
-        ->and($snapshot?->poofmq_attributed_estimated_spend_cents)->toBeGreaterThanOrEqual(0)
-        ->and($snapshot?->credit_balance_cents)->toBe(1200)
-        ->and($snapshot?->applied_credits_cents)->toBe(125)
-        ->and($snapshot?->latest_invoice_total_cents)->toBe(900)
-        ->and($snapshot?->funding_gap_cents)->toBeGreaterThanOrEqual(0)
-        ->and((float) $snapshot?->runway_months)->toBeGreaterThanOrEqual(0)
-        ->and(data_get($snapshot?->raw_payload, 'attribution_ratio'))->toBeGreaterThan(0)
-        ->and(data_get($snapshot?->raw_payload, 'current_usage.0.service_name'))->toBe('Redis');
+    expect($snapshot['workspace_current_spend_cents'])->toBe(725)
+        ->and($snapshot['poofmq_attributed_current_spend_cents'])->toBeGreaterThanOrEqual(0)
+        ->and($snapshot['credit_balance_cents'])->toBe(500)
+        ->and($snapshot['applied_credits_cents'])->toBe(50)
+        ->and($snapshot['latest_invoice_total_cents'])->toBe(1200)
+        ->and($snapshot['workspace_estimated_spend_cents'])->toBeGreaterThan(0)
+        ->and($snapshot['poofmq_attributed_estimated_spend_cents'])->toBeGreaterThanOrEqual(0)
+        ->and(data_get($snapshot, 'raw_payload.current_usage.0.service_name'))->toBe('go-api');
 });
 
-it('fails fast when railway graphql credentials are missing', function () {
-    config()->set('services.railway.api_token', null);
+it('fails when railway workspace and project ids are missing', function () {
+    config()->set('services.railway.workspace_id', null);
 
-    $job = new SyncRailwayBillingSnapshot;
-
-    expect(fn () => $this->app->call([$job, 'handle']))
-        ->toThrow(RuntimeException::class, 'Railway GraphQL API credentials are not configured.');
-
-    expect(RailwayBillingSnapshot::query()->count())->toBe(0);
+    expect(fn () => app(RailwayUsageService::class)->fetchFundingSnapshot())
+        ->toThrow(RuntimeException::class, 'Railway GraphQL workspace and project IDs are not configured.');
 });

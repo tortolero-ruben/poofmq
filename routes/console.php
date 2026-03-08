@@ -17,6 +17,6 @@ Schedule::job(new ReconcileApiKeysToRedis)
     ->onOneServer();
 
 Schedule::job(new SyncRailwayBillingSnapshot)
-    ->hourly()
+    ->everyFiveMinutes()
     ->withoutOverlapping()
     ->onOneServer();

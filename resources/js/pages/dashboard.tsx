@@ -1,6 +1,6 @@
-import { Head } from '@inertiajs/react';
-import type { ReactNode } from 'react';
+import { Head, Link, usePage } from '@inertiajs/react';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import {
     Card,
     CardContent,
@@ -11,6 +11,7 @@ import {
 import AppLayout from '@/layouts/app-layout';
 import type { BreadcrumbItem } from '@/types';
 import { dashboard } from '@/routes';
+import { admin as fundingAdmin, index as fundingIndex } from '@/routes/funding';
 
 type FundingSummary = {
     gross_donations_cents: number;
@@ -19,30 +20,26 @@ type FundingSummary = {
     event_count: number;
 };
 
-type FundingHistoryItem = {
-    id: string;
-    provider: string;
-    provider_event_id: string;
-    event_type: string;
-    amount_cents: number;
-    currency: string;
-    donor_name: string | null;
-    happened_at: string;
-};
-
 type BillingLatest = {
-    balance_cents: number;
-    month_to_date_spend_cents: number;
+    workspace_current_spend_cents: number;
+    workspace_estimated_spend_cents: number;
+    poofmq_attributed_current_spend_cents: number;
+    poofmq_attributed_estimated_spend_cents: number;
+    funding_gap_cents: number;
     runway_months: number;
+    coverage_percent: number;
     captured_at: string;
 } | null;
 
 type Billing = {
     latest: BillingLatest;
     trend: {
-        balance_delta_cents: number;
-        spend_delta_cents: number;
+        workspace_current_spend_delta_cents: number;
+        poofmq_attributed_estimated_spend_delta_cents: number;
+        funding_gap_delta_cents: number;
     };
+    is_stale: boolean;
+    snapshot_age_minutes: number | null;
 };
 
 type Capacity = {
@@ -50,38 +47,33 @@ type Capacity = {
     effective_limit_per_minute: number;
     is_boost_active: boolean;
     boost_multiplier: number | null;
-    boost_expires_at: string | null;
 };
 
 type Alert = {
     key: string;
     severity: string;
     message: string;
-    runbook: string;
-};
-
-type ObservabilityMetrics = {
-    throughput_total: number;
-    error_rate_percent: number;
-    avg_push_latency_ms: number;
-    avg_pop_latency_ms: number;
-    redis_memory_bytes: number;
-    burn_rate_cents_per_day: number;
 };
 
 type Observability = {
-    metrics: ObservabilityMetrics;
+    metrics: {
+        throughput_total: number;
+        error_rate_percent: number;
+        burn_rate_cents_per_day: number;
+        railway_snapshot_age_minutes: number;
+    };
     alerts: Alert[];
 };
 
 type DashboardProps = {
     funding: {
         summary: FundingSummary;
-        history: FundingHistoryItem[];
     };
     billing: Billing;
-    capacity: Capacity;
-    observability: Observability;
+    admin: {
+        capacity: Capacity;
+        observability: Observability;
+    } | null;
 };
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -101,45 +93,20 @@ function formatCents(cents: number): string {
     return currencyFormatter.format(cents / 100);
 }
 
-function formatBytes(bytes: number): string {
-    const megabytes = bytes / (1024 * 1024);
+function formatAge(minutes: number | null): string {
+    if (minutes === null) {
+        return 'Unknown';
+    }
 
-    return `${megabytes.toFixed(2)} MB`;
+    if (minutes < 60) {
+        return `${minutes} min`;
+    }
+
+    return `${(minutes / 60).toFixed(1)} hr`;
 }
 
-function MetricRow({
-    label,
-    value,
-    emphasize = false,
-}: {
-    label: string;
-    value: ReactNode;
-    emphasize?: boolean;
-}) {
-    return (
-        <div className="flex items-baseline justify-between gap-3 border-b border-border/60 py-2 first:pt-0 last:border-b-0 last:pb-0">
-            <span className="text-xs font-medium tracking-wide text-muted-foreground">
-                {label}
-            </span>
-            <span
-                className={
-                    emphasize
-                        ? 'font-mono text-sm font-medium text-primary'
-                        : 'font-mono text-sm text-foreground'
-                }
-            >
-                {value}
-            </span>
-        </div>
-    );
-}
-
-export default function Dashboard({
-    funding,
-    billing,
-    capacity,
-    observability,
-}: DashboardProps) {
+export default function Dashboard({ funding, billing, admin }: DashboardProps) {
+    const { auth } = usePage().props as { auth: { is_admin: boolean } };
     const billingLatest = billing.latest;
 
     return (
@@ -147,72 +114,171 @@ export default function Dashboard({
             <Head title="Dashboard" />
 
             <div className="space-y-6 p-6">
+                <div className="flex flex-col gap-3 rounded-2xl border border-border/70 bg-card p-5 md:flex-row md:items-center md:justify-between">
+                    <div className="space-y-1">
+                        <p className="text-sm font-medium text-muted-foreground">
+                            Funding overview
+                        </p>
+                        <h1 className="text-2xl font-semibold tracking-tight">
+                            Shared summary for all users
+                        </h1>
+                    </div>
+                    <div className="flex gap-3">
+                        <Button asChild variant="outline">
+                            <Link href={fundingIndex()}>
+                                Public funding page
+                            </Link>
+                        </Button>
+                        {auth.is_admin && (
+                            <Button asChild>
+                                <Link href={fundingAdmin()}>
+                                    Admin funding details
+                                </Link>
+                            </Button>
+                        )}
+                    </div>
+                </div>
+
                 <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
                     <Card>
                         <CardHeader>
-                            <CardTitle>Funding</CardTitle>
+                            <CardTitle>Net funding</CardTitle>
                             <CardDescription>
-                                Donation ledger aggregate
+                                Donations minus refunds
                             </CardDescription>
                         </CardHeader>
                         <CardContent>
-                            <MetricRow
-                                label="Net"
-                                value={formatCents(
-                                    funding.summary.net_funding_cents,
-                                )}
-                                emphasize
-                            />
-                            <MetricRow
-                                label="Gross"
-                                value={formatCents(
-                                    funding.summary.gross_donations_cents,
-                                )}
-                            />
-                            <MetricRow
-                                label="Refunds"
-                                value={formatCents(
-                                    funding.summary.refunds_cents,
-                                )}
-                            />
-                            <MetricRow
-                                label="Events"
-                                value={funding.summary.event_count}
-                            />
+                            <p className="text-3xl font-semibold tracking-tight">
+                                {formatCents(funding.summary.net_funding_cents)}
+                            </p>
                         </CardContent>
                     </Card>
 
                     <Card>
                         <CardHeader>
-                            <CardTitle>Railway billing</CardTitle>
+                            <CardTitle>Current spend</CardTitle>
                             <CardDescription>
-                                Latest balance and runway
+                                Railway workspace usage snapshot
                             </CardDescription>
                         </CardHeader>
                         <CardContent>
+                            <p className="text-3xl font-semibold tracking-tight">
+                                {billingLatest === null
+                                    ? '$0.00'
+                                    : formatCents(
+                                          billingLatest.workspace_current_spend_cents,
+                                      )}
+                            </p>
+                        </CardContent>
+                    </Card>
+
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>PoofMQ estimate</CardTitle>
+                            <CardDescription>
+                                Project-attributed estimate, not invoice exact
+                            </CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                            <p className="text-3xl font-semibold tracking-tight">
+                                {billingLatest === null
+                                    ? '$0.00'
+                                    : formatCents(
+                                          billingLatest.poofmq_attributed_estimated_spend_cents,
+                                      )}
+                            </p>
+                        </CardContent>
+                    </Card>
+
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>Funding gap</CardTitle>
+                            <CardDescription>
+                                Remaining projected shortfall
+                            </CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                            <p className="text-3xl font-semibold tracking-tight">
+                                {billingLatest === null
+                                    ? '$0.00'
+                                    : formatCents(
+                                          billingLatest.funding_gap_cents,
+                                      )}
+                            </p>
+                        </CardContent>
+                    </Card>
+                </div>
+
+                <div className="grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>Funding posture</CardTitle>
+                            <CardDescription>
+                                Summary funding data without internal cost
+                                breakdowns
+                            </CardDescription>
+                        </CardHeader>
+                        <CardContent className="space-y-4">
                             {billingLatest === null ? (
                                 <p className="text-sm text-muted-foreground">
-                                    No billing snapshots yet.
+                                    No Railway funding snapshot has been
+                                    recorded yet.
                                 </p>
                             ) : (
                                 <>
-                                    <MetricRow
-                                        label="Balance"
-                                        value={formatCents(
-                                            billingLatest.balance_cents,
-                                        )}
-                                        emphasize
-                                    />
-                                    <MetricRow
-                                        label="Spend MTD"
-                                        value={formatCents(
-                                            billingLatest.month_to_date_spend_cents,
-                                        )}
-                                    />
-                                    <MetricRow
-                                        label="Runway"
-                                        value={`${billingLatest.runway_months.toFixed(2)} months`}
-                                    />
+                                    <div className="grid gap-4 md:grid-cols-2">
+                                        <div className="rounded-xl border border-border/70 bg-muted/20 p-4">
+                                            <p className="text-xs font-medium tracking-[0.18em] text-muted-foreground uppercase">
+                                                Runway
+                                            </p>
+                                            <p className="mt-2 text-3xl font-semibold tracking-tight">
+                                                {billingLatest.runway_months.toFixed(
+                                                    2,
+                                                )}{' '}
+                                                months
+                                            </p>
+                                        </div>
+                                        <div className="rounded-xl border border-border/70 bg-muted/20 p-4">
+                                            <p className="text-xs font-medium tracking-[0.18em] text-muted-foreground uppercase">
+                                                Coverage
+                                            </p>
+                                            <p className="mt-2 text-3xl font-semibold tracking-tight">
+                                                {billingLatest.coverage_percent.toFixed(
+                                                    2,
+                                                )}
+                                                %
+                                            </p>
+                                        </div>
+                                    </div>
+
+                                    <div className="rounded-xl border border-border/70 bg-muted/20 p-4">
+                                        <div className="flex items-center justify-between gap-3">
+                                            <p className="text-sm font-medium">
+                                                Snapshot status
+                                            </p>
+                                            {billing.is_stale ? (
+                                                <Badge variant="destructive">
+                                                    Stale
+                                                </Badge>
+                                            ) : (
+                                                <Badge variant="outline">
+                                                    Fresh
+                                                </Badge>
+                                            )}
+                                        </div>
+                                        <p className="mt-2 text-sm text-muted-foreground">
+                                            Last updated{' '}
+                                            {new Date(
+                                                billingLatest.captured_at,
+                                            ).toLocaleString()}{' '}
+                                            with snapshot age{' '}
+                                            {formatAge(
+                                                billing.snapshot_age_minutes,
+                                            )}
+                                            . This refreshes every 5 minutes,
+                                            not continuously.
+                                        </p>
+                                    </div>
                                 </>
                             )}
                         </CardContent>
@@ -220,136 +286,98 @@ export default function Dashboard({
 
                     <Card>
                         <CardHeader>
-                            <CardTitle>Capacity limit</CardTitle>
+                            <CardTitle>Access split</CardTitle>
                             <CardDescription>
-                                Active rate limit controls
+                                Public versus admin-only information
                             </CardDescription>
                         </CardHeader>
-                        <CardContent className="space-y-4">
-                            <div className="space-y-0">
-                                <MetricRow
-                                    label="Effective"
-                                    value={`${capacity.effective_limit_per_minute} req/min`}
-                                    emphasize
-                                />
-                                <MetricRow
-                                    label="Baseline"
-                                    value={`${capacity.base_limit_per_minute} req/min`}
-                                />
-                            </div>
-                            {capacity.is_boost_active ? (
-                                <Badge variant="default">
-                                    Boost x{capacity.boost_multiplier}
-                                </Badge>
+                        <CardContent className="space-y-3 text-sm text-muted-foreground">
+                            <p>
+                                Public and regular-user views show workspace
+                                usage plus a PoofMQ-attributed estimate only.
+                            </p>
+                            <p>
+                                Admin-only views include service-level usage,
+                                invoice totals, credits, ledger detail, and
+                                operational observability.
+                            </p>
+                            {auth.is_admin ? (
+                                <p>
+                                    Your account can open the admin funding
+                                    page.
+                                </p>
                             ) : (
-                                <Badge variant="outline">No active boost</Badge>
+                                <p>
+                                    Your account does not receive internal cost
+                                    breakdowns.
+                                </p>
                             )}
-                        </CardContent>
-                    </Card>
-
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>Observability</CardTitle>
-                            <CardDescription>
-                                Runtime SLO indicators
-                            </CardDescription>
-                        </CardHeader>
-                        <CardContent>
-                            <MetricRow
-                                label="Throughput"
-                                value={`${observability.metrics.throughput_total} ops`}
-                            />
-                            <MetricRow
-                                label="Error rate"
-                                value={`${observability.metrics.error_rate_percent.toFixed(2)}%`}
-                            />
-                            <MetricRow
-                                label="Redis memory"
-                                value={formatBytes(
-                                    observability.metrics.redis_memory_bytes,
-                                )}
-                            />
                         </CardContent>
                     </Card>
                 </div>
 
-                <div className="grid gap-6 xl:grid-cols-2">
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>Funding history</CardTitle>
-                            <CardDescription>
-                                Most recent donation ledger entries
-                            </CardDescription>
-                        </CardHeader>
-                        <CardContent className="space-y-3">
-                            {funding.history.length === 0 ? (
-                                <p className="text-sm text-muted-foreground">
-                                    No donation ledger entries yet.
+                {auth.is_admin && admin !== null && (
+                    <div className="grid gap-6 md:grid-cols-2">
+                        <Card>
+                            <CardHeader>
+                                <CardTitle>Admin capacity</CardTitle>
+                            </CardHeader>
+                            <CardContent className="space-y-2 text-sm">
+                                <p>
+                                    Effective limit:{' '}
+                                    {admin.capacity.effective_limit_per_minute}{' '}
+                                    req/min
                                 </p>
-                            ) : (
-                                funding.history.map((entry) => (
-                                    <div
-                                        key={entry.id}
-                                        className="rounded-xl border border-border bg-muted/30 px-4 py-3"
-                                    >
-                                        <p className="font-medium text-foreground">
-                                            {entry.event_type}
-                                        </p>
-                                        <p className="mt-1 text-sm text-muted-foreground">
-                                            {formatCents(entry.amount_cents)}{' '}
-                                            via {entry.provider}
-                                        </p>
-                                    </div>
-                                ))
-                            )}
-                        </CardContent>
-                    </Card>
+                                <p>
+                                    Baseline:{' '}
+                                    {admin.capacity.base_limit_per_minute}{' '}
+                                    req/min
+                                </p>
+                                <p>
+                                    Boost:{' '}
+                                    {admin.capacity.is_boost_active
+                                        ? `x${admin.capacity.boost_multiplier}`
+                                        : 'inactive'}
+                                </p>
+                            </CardContent>
+                        </Card>
 
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>Active alerts</CardTitle>
-                            <CardDescription>
-                                Threshold-driven operational alerts
-                            </CardDescription>
-                        </CardHeader>
-                        <CardContent className="space-y-3">
-                            {observability.alerts.length === 0 ? (
-                                <p className="text-sm text-muted-foreground">
-                                    No active alerts.
+                        <Card>
+                            <CardHeader>
+                                <CardTitle>Admin observability</CardTitle>
+                            </CardHeader>
+                            <CardContent className="space-y-2 text-sm">
+                                <p>
+                                    Throughput:{' '}
+                                    {
+                                        admin.observability.metrics
+                                            .throughput_total
+                                    }{' '}
+                                    ops
                                 </p>
-                            ) : (
-                                observability.alerts.map((alert) => (
-                                    <div
-                                        key={alert.key}
-                                        className="rounded-xl border border-border bg-muted/30 px-4 py-3"
-                                    >
-                                        <div className="mb-2 flex items-center gap-2">
-                                            <Badge
-                                                variant={
-                                                    alert.severity ===
-                                                    'critical'
-                                                        ? 'destructive'
-                                                        : 'secondary'
-                                                }
-                                            >
-                                                {alert.severity}
-                                            </Badge>
-                                            <span className="font-medium text-foreground">
-                                                {alert.key}
-                                            </span>
-                                        </div>
-                                        <p className="text-sm text-foreground">
-                                            {alert.message}
-                                        </p>
-                                        <p className="mt-1 text-xs text-muted-foreground">
-                                            {alert.runbook}
-                                        </p>
-                                    </div>
-                                ))
-                            )}
-                        </CardContent>
-                    </Card>
-                </div>
+                                <p>
+                                    Error rate:{' '}
+                                    {
+                                        admin.observability.metrics
+                                            .error_rate_percent
+                                    }
+                                    %
+                                </p>
+                                <p>
+                                    Burn rate:{' '}
+                                    {
+                                        admin.observability.metrics
+                                            .burn_rate_cents_per_day
+                                    }{' '}
+                                    cents/day
+                                </p>
+                                <p>
+                                    Alerts: {admin.observability.alerts.length}
+                                </p>
+                            </CardContent>
+                        </Card>
+                    </div>
+                )}
             </div>
         </AppLayout>
     );

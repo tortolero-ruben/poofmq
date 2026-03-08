@@ -8,10 +8,11 @@ it('includes observability metrics and alert payload in dashboard props', functi
     config()->set('services.go_api.base_url', 'http://go-api.test');
     config()->set('services.go_api.timeout_seconds', 2);
     config()->set('observability.thresholds.error_rate_percent', 1.0);
+    config()->set('observability.thresholds.railway_snapshot_max_age_minutes', 30);
 
     RailwayBillingSnapshot::factory()->create([
-        'month_to_date_spend_cents' => 620,
-        'captured_at' => now(),
+        'current_spend_cents' => 620,
+        'captured_at' => now()->subMinutes(45),
     ]);
 
     Http::fake([
@@ -26,15 +27,17 @@ it('includes observability metrics and alert payload in dashboard props', functi
         ], 200),
     ]);
 
-    $user = User::factory()->create();
+    $user = User::factory()->create([
+        'email' => 'rubentortolero@gmail.com',
+    ]);
 
     $response = $this->actingAs($user)->get(route('dashboard'));
 
     $response->assertOk();
 
-    expect($response->inertiaProps('observability.metrics.throughput_total'))->toBe(220)
-        ->and($response->inertiaProps('observability.metrics.error_rate_percent'))->toBe(2.73)
-        ->and($response->inertiaProps('observability.metrics.redis_memory_bytes'))->toBe(7340032)
-        ->and($response->inertiaProps('observability.metrics.burn_rate_cents_per_day'))->toBeGreaterThan(0)
-        ->and($response->inertiaProps('observability.alerts'))->not->toBe([]);
+    expect($response->inertiaProps('admin.observability.metrics.throughput_total'))->toBe(220)
+        ->and($response->inertiaProps('admin.observability.metrics.error_rate_percent'))->toBe(2.73)
+        ->and($response->inertiaProps('admin.observability.metrics.burn_rate_cents_per_day'))->toBeGreaterThan(0)
+        ->and($response->inertiaProps('admin.observability.metrics.railway_snapshot_age_minutes'))->toBeGreaterThan(30)
+        ->and($response->inertiaProps('admin.observability.alerts'))->not->toBe([]);
 });

@@ -42,8 +42,9 @@ return [
 
     'railway' => [
         'api_token' => env('RAILWAY_API_TOKEN'),
+        'workspace_id' => env('RAILWAY_WORKSPACE_ID'),
         'project_id' => env('RAILWAY_PROJECT_ID'),
-        'billing_endpoint' => env('RAILWAY_BILLING_ENDPOINT', 'https://railway.app/api/v1/billing/summary'),
+        'graphql_endpoint' => env('RAILWAY_GRAPHQL_ENDPOINT', 'https://backboard.railway.com/graphql/v2'),
         'timeout_seconds' => (int) env('RAILWAY_API_TIMEOUT_SECONDS', 10),
     ],
 

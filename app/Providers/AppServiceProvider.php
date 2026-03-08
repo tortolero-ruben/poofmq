@@ -2,12 +2,14 @@
 
 namespace App\Providers;
 
+use App\Models\User;
 use App\Services\TurnstileService;
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Events\DiagnosingHealth;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Redis;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Validation\Rules\Password;
@@ -28,7 +30,16 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         $this->configureDefaults();
+        $this->registerAuthorization();
         $this->registerHealthChecks();
+    }
+
+    /**
+     * Register app-specific authorization gates.
+     */
+    protected function registerAuthorization(): void
+    {
+        Gate::define('viewAdminFunding', fn (User $user): bool => $user->isAdmin());
     }
 
     /**

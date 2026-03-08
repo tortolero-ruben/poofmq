@@ -1,10 +1,11 @@
-import { Link } from '@inertiajs/react';
+import { Link, usePage } from '@inertiajs/react';
 import {
     BookOpen,
     Code2,
     FolderGit2,
     KeyRound,
     LayoutGrid,
+    WalletCards,
     FolderKanban,
 } from 'lucide-react';
 import AppLogo from '@/components/app-logo';
@@ -25,6 +26,7 @@ import { dashboard } from '@/routes';
 import { index as apiKeysIndex } from '@/routes/api-keys';
 import { index as developersIndex } from '@/routes/developers';
 import { quickstart as docsQuickstart } from '@/routes/docs';
+import { admin as fundingAdmin, index as fundingIndex } from '@/routes/funding';
 import { index as projectsIndex } from '@/routes/projects';
 
 const REPOSITORY_URL = 'https://github.com/tortolero-ruben/poofmq';
@@ -66,6 +68,27 @@ const footerNavItems: NavItem[] = [
 ];
 
 export function AppSidebar() {
+    const { auth } = usePage().props as { auth: { is_admin: boolean } };
+    const mainItems = auth.is_admin
+        ? [
+              ...mainNavItems.slice(0, 3),
+              {
+                  title: 'Funding Admin',
+                  href: fundingAdmin(),
+                  icon: WalletCards,
+              },
+              ...mainNavItems.slice(3),
+          ]
+        : mainNavItems;
+    const footerItems = [
+        {
+            title: 'Public Funding',
+            href: fundingIndex(),
+            icon: WalletCards,
+        },
+        ...footerNavItems,
+    ];
+
     return (
         <Sidebar collapsible="icon" variant="inset">
             <SidebarHeader>
@@ -81,11 +104,11 @@ export function AppSidebar() {
             </SidebarHeader>
 
             <SidebarContent>
-                <NavMain items={mainNavItems} />
+                <NavMain items={mainItems} />
             </SidebarContent>
 
             <SidebarFooter>
-                <NavFooter items={footerNavItems} className="mt-auto" />
+                <NavFooter items={footerItems} className="mt-auto" />
                 <NavUser />
             </SidebarFooter>
         </Sidebar>

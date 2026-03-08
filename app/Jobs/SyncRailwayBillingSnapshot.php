@@ -3,7 +3,8 @@
 namespace App\Jobs;
 
 use App\Models\RailwayBillingSnapshot;
-use App\Services\RailwayBillingService;
+use App\Services\DonationLedgerService;
+use App\Services\RailwayUsageService;
 use App\Services\RunwayCalculator;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
@@ -27,28 +28,43 @@ class SyncRailwayBillingSnapshot implements ShouldQueue
      * Execute the job.
      */
     public function handle(
-        RailwayBillingService $railwayBillingService,
+        RailwayUsageService $railwayUsageService,
+        DonationLedgerService $donationLedgerService,
         RunwayCalculator $runwayCalculator
     ): void {
         try {
-            $summary = $railwayBillingService->fetchSummary();
+            $summary = $railwayUsageService->fetchFundingSnapshot();
+            $funding = $donationLedgerService->summary();
             $budgetCents = (int) config('poofmq_capacity.monthly_budget_cents', 500);
+            $fundingGapCents = max(0, $summary['poofmq_attributed_estimated_spend_cents'] - $funding['net_funding_cents']);
             $runwayMonths = $runwayCalculator->months(
-                balanceCents: $summary['balance_cents'],
+                balanceCents: max(0, $funding['net_funding_cents'] - $summary['poofmq_attributed_current_spend_cents']),
                 targetMonthlyBudgetCents: $budgetCents
             );
 
             RailwayBillingSnapshot::query()->create([
-                'balance_cents' => $summary['balance_cents'],
-                'month_to_date_spend_cents' => $summary['month_to_date_spend_cents'],
+                'balance_cents' => $summary['credit_balance_cents'],
+                'month_to_date_spend_cents' => $summary['workspace_current_spend_cents'],
+                'current_spend_cents' => $summary['workspace_current_spend_cents'],
+                'estimated_spend_cents' => $summary['workspace_estimated_spend_cents'],
+                'poofmq_attributed_current_spend_cents' => $summary['poofmq_attributed_current_spend_cents'],
+                'poofmq_attributed_estimated_spend_cents' => $summary['poofmq_attributed_estimated_spend_cents'],
+                'credit_balance_cents' => $summary['credit_balance_cents'],
+                'applied_credits_cents' => $summary['applied_credits_cents'],
+                'latest_invoice_total_cents' => $summary['latest_invoice_total_cents'],
+                'funding_gap_cents' => $fundingGapCents,
                 'runway_months' => $runwayMonths,
+                'snapshot_source' => 'railway_graphql',
                 'captured_at' => $summary['captured_at'],
+                'billing_period_starts_at' => $summary['billing_period_starts_at'],
+                'billing_period_ends_at' => $summary['billing_period_ends_at'],
                 'raw_payload' => $summary['raw_payload'],
             ]);
 
             Log::info('Railway billing snapshot synced', [
-                'balance_cents' => $summary['balance_cents'],
-                'month_to_date_spend_cents' => $summary['month_to_date_spend_cents'],
+                'workspace_current_spend_cents' => $summary['workspace_current_spend_cents'],
+                'poofmq_attributed_estimated_spend_cents' => $summary['poofmq_attributed_estimated_spend_cents'],
+                'funding_gap_cents' => $fundingGapCents,
                 'runway_months' => $runwayMonths,
             ]);
         } catch (\Throwable $exception) {

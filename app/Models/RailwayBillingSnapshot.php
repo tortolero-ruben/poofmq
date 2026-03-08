@@ -19,9 +19,20 @@ class RailwayBillingSnapshot extends Model
     protected $fillable = [
         'balance_cents',
         'month_to_date_spend_cents',
+        'current_spend_cents',
+        'estimated_spend_cents',
+        'poofmq_attributed_current_spend_cents',
+        'poofmq_attributed_estimated_spend_cents',
+        'credit_balance_cents',
+        'applied_credits_cents',
+        'latest_invoice_total_cents',
+        'funding_gap_cents',
         'runway_months',
+        'snapshot_source',
         'raw_payload',
         'captured_at',
+        'billing_period_starts_at',
+        'billing_period_ends_at',
     ];
 
     /**
@@ -34,6 +45,8 @@ class RailwayBillingSnapshot extends Model
         return [
             'raw_payload' => 'array',
             'captured_at' => 'immutable_datetime',
+            'billing_period_starts_at' => 'immutable_datetime',
+            'billing_period_ends_at' => 'immutable_datetime',
             'runway_months' => 'float',
         ];
     }

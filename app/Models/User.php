@@ -35,6 +35,17 @@ class User extends Authenticatable implements MustVerifyEmail
     }
 
     /**
+     * Determine whether the user can access internal admin-only views.
+     */
+    public function isAdmin(): bool
+    {
+        /** @var list<string> $adminEmails */
+        $adminEmails = config('poofmq.admin_emails', []);
+
+        return in_array(strtolower($this->email), $adminEmails, true);
+    }
+
+    /**
      * The attributes that are mass assignable.
      *
      * @var list<string>

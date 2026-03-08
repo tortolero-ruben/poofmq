@@ -4,6 +4,7 @@ import DeveloperKeyDialog from '@/components/developer-key-dialog';
 import InstantStartDialog from '@/components/instant-start-dialog';
 import LiveDemoPanel from '@/components/live-demo-panel';
 import { dashboard, login } from '@/routes';
+import { index as fundingIndex } from '@/routes/funding';
 
 export default function Welcome({
     canRegister = true,
@@ -69,6 +70,12 @@ export default function Welcome({
                         >
                             Docs
                         </a>
+                        <Link
+                            className="text-muted-foreground transition-colors hover:text-primary"
+                            href={fundingIndex()}
+                        >
+                            Funding
+                        </Link>
                         <a
                             className="text-muted-foreground transition-colors hover:text-primary"
                             href="#vault"

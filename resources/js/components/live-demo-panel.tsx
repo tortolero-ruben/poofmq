@@ -130,25 +130,25 @@ export default function LiveDemoPanel() {
     };
 
     return (
-        <div className="rounded-2xl border border-border bg-card p-8">
+        <div className="min-w-0 rounded-2xl border border-border bg-card p-5 sm:p-8">
             <div className="mb-6 inline-flex items-center rounded-md bg-primary/10 px-2 py-1 text-xs font-semibold text-primary">
                 Live Example
             </div>
-            <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-                <h2 className="text-2xl font-bold tracking-tight">
+            <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <h2 className="text-2xl font-bold tracking-tight sm:text-3xl">
                     Push it. Pop it.
                 </h2>
                 <div className="rounded-lg border border-border bg-muted px-3 py-2 text-xs font-medium text-muted-foreground">
                     Live depth: {depth}
                 </div>
             </div>
-            <p className="mb-8 max-w-2xl text-muted-foreground">
+            <p className="mb-6 max-w-2xl text-sm text-muted-foreground sm:mb-8 sm:text-base">
                 Push a message, watch it land, then pop the next one off the
                 front. When you're ready, create a real queue.
             </p>
 
-            <div className="mb-8 grid gap-6 xl:grid-cols-[1.1fr_0.9fr]">
-                <div className="rounded-xl border border-border bg-muted/50 p-6">
+            <div className="mb-8 grid min-w-0 gap-6 xl:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)]">
+                <div className="min-w-0 rounded-xl border border-border bg-muted/50 p-5 sm:p-6">
                     <label
                         htmlFor="live-demo-message"
                         className="mb-3 block text-xs font-semibold tracking-wider text-muted-foreground uppercase"
@@ -164,7 +164,7 @@ export default function LiveDemoPanel() {
                         className="mb-4 w-full resize-none rounded-lg border border-border bg-background px-4 py-3 text-sm placeholder:text-muted-foreground focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none"
                         placeholder="hello from poofmq"
                     />
-                    <div className="mb-4 flex flex-wrap gap-3">
+                    <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
                         <Button
                             type="button"
                             onClick={handlePush}
@@ -173,7 +173,7 @@ export default function LiveDemoPanel() {
                                 isPopping ||
                                 demoMessage.trim().length === 0
                             }
-                            className="bg-primary text-primary-foreground hover:bg-primary/90"
+                            className="w-full bg-primary text-primary-foreground hover:bg-primary/90 sm:w-auto"
                         >
                             {isPushing ? 'Pushing...' : 'Push'}
                         </Button>
@@ -182,6 +182,7 @@ export default function LiveDemoPanel() {
                             onClick={handlePop}
                             disabled={isPopping || isPushing}
                             variant="outline"
+                            className="w-full sm:w-auto"
                         >
                             {isPopping ? 'Popping...' : 'Pop'}
                         </Button>
@@ -201,7 +202,7 @@ export default function LiveDemoPanel() {
                     ) : null}
                 </div>
 
-                <div className="rounded-xl border border-border bg-muted/30 p-6">
+                <div className="min-w-0 rounded-xl border border-border bg-muted/30 p-5 sm:p-6">
                     <p className="mb-4 text-xs font-semibold tracking-wider text-muted-foreground uppercase">
                         Live queue
                     </p>
@@ -241,11 +242,13 @@ export default function LiveDemoPanel() {
                 </div>
             </div>
 
-            <div className="overflow-x-auto rounded-lg border border-border bg-muted/50 p-4 font-mono text-sm">
+            <div className="max-w-full overflow-x-auto rounded-lg border border-border bg-muted/50 p-4 font-mono text-xs sm:text-sm">
                 <p className="mb-2 text-muted-foreground">
                     # Real queue API example
                 </p>
-                <pre className="whitespace-pre-wrap">{liveCurlExample}</pre>
+                <pre className="max-w-full break-all whitespace-pre-wrap">
+                    {liveCurlExample}
+                </pre>
             </div>
         </div>
     );

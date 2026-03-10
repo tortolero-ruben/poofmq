@@ -3,8 +3,11 @@
 use App\Models\DonationLedgerEntry;
 use App\Models\RailwayBillingSnapshot;
 use App\Models\User;
+use Inertia\Testing\AssertableInertia as Assert;
 
 it('renders the public funding page with funding and billing props', function () {
+    config()->set('services.donations.donation_url', 'https://ko-fi.com/poofmq');
+
     DonationLedgerEntry::factory()->create([
         'provider_event_id' => 'evt_public',
         'event_type' => 'donation_received',
@@ -19,13 +22,16 @@ it('renders the public funding page with funding and billing props', function ()
         'funding_gap_cents' => 0,
     ]);
 
-    $response = $this->get(route('funding.index'));
-
-    $response->assertOk();
-
-    expect($response->inertiaProps('funding.summary.net_funding_cents'))->toBe(1200)
-        ->and($response->inertiaProps('billing.latest.workspace_current_spend_cents'))->toBe(450)
-        ->and($response->inertiaProps('billing.latest.poofmq_attributed_estimated_spend_cents'))->toBe(720);
+    $this->get(route('funding.index'))
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('funding/index')
+            ->where('donationUrl', 'https://ko-fi.com/poofmq')
+            ->where('funding.summary.net_funding_cents', 1200)
+            ->where('billing.latest.workspace_current_spend_cents', 450)
+            ->where('billing.latest.poofmq_attributed_estimated_spend_cents', 720)
+            ->has('billing.snapshots')
+            ->etc());
 });
 
 it('allows the configured admin user to open the admin funding page', function () {

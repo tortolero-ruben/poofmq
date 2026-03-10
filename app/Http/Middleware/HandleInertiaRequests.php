@@ -42,6 +42,7 @@ class HandleInertiaRequests extends Middleware
                 'user' => $request->user(),
                 'is_admin' => $request->user()?->isAdmin() ?? false,
             ],
+            'donationUrl' => config('services.donations.donation_url'),
             'turnstile' => [
                 'siteKey' => config('services.turnstile.site_key'),
             ],

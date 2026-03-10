@@ -15,15 +15,15 @@ export default function Quickstart() {
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Quickstart" />
-            <div className="flex h-full flex-1 flex-col gap-8 p-6">
+            <div className="flex h-full flex-1 flex-col gap-6 p-4 sm:gap-8 sm:p-6">
                 <div>
                     <h1
-                        className="text-2xl font-semibold tracking-tight"
+                        className="text-2xl font-semibold tracking-tight sm:text-3xl"
                         id="quickstart-heading"
                     >
                         Quickstart
                     </h1>
-                    <p className="mt-1 max-w-3xl text-muted-foreground">
+                    <p className="mt-2 max-w-3xl text-sm text-muted-foreground sm:text-base">
                         Send and receive your first PoofMQ message. Covers queue
                         setup, HTTP requests, and SDK examples for Node and
                         Python.

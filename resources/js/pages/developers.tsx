@@ -17,7 +17,7 @@ export default function Developers() {
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Developers" />
             <div
-                className="flex h-full flex-1 flex-col gap-8 p-6"
+                className="flex h-full flex-1 flex-col gap-6 p-4 sm:gap-8 sm:p-6"
                 data-testid="developers-page"
             >
                 <div>

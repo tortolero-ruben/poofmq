@@ -311,33 +311,36 @@ export function QuickstartContent({
     const selectedLanguageLabel = sdkLanguage === 'node' ? 'Node' : 'Python';
 
     return (
-        <section className="mt-8 grid gap-6 xl:grid-cols-[20rem_minmax(0,1fr)]">
-            <aside className="xl:sticky xl:top-8 xl:self-start">
+        <section className="mt-6 grid gap-6 xl:mt-8 xl:grid-cols-[20rem_minmax(0,1fr)]">
+            <aside className="order-2 xl:sticky xl:top-8 xl:order-1 xl:self-start">
                 <div className="overflow-hidden rounded-[1.75rem] border border-border bg-card shadow-soft">
-                    <div className="border-b border-border px-6 py-6">
+                    <div className="border-b border-border px-5 py-5 sm:px-6 sm:py-6">
                         <h2 className="text-sm font-semibold tracking-tight">
                             On this page
                         </h2>
-                        <nav className="mt-3 space-y-1.5">
+                        <nav
+                            className="mt-3 flex flex-wrap gap-2 xl:block xl:space-y-1.5"
+                            aria-label="Quickstart sections"
+                        >
                             <a
                                 href="#http-quickstart"
-                                className="block text-sm text-muted-foreground hover:text-foreground"
+                                className="inline-flex items-center rounded-full border border-border bg-background px-3 py-1.5 text-sm text-muted-foreground hover:text-foreground xl:flex xl:rounded-none xl:border-0 xl:bg-transparent xl:px-0 xl:py-0"
                             >
                                 HTTP Quickstart
                             </a>
                             <a
                                 href="#sdk-guide"
-                                className="block text-sm text-muted-foreground hover:text-foreground"
+                                className="inline-flex items-center rounded-full border border-border bg-background px-3 py-1.5 text-sm text-muted-foreground hover:text-foreground xl:flex xl:rounded-none xl:border-0 xl:bg-transparent xl:px-0 xl:py-0"
                             >
                                 SDK Guide
                             </a>
                         </nav>
                     </div>
 
-                    <div className="space-y-6 px-6 py-6">
+                    <div className="space-y-6 px-5 py-5 sm:px-6 sm:py-6">
                         <a
                             href={startHref}
-                            className="inline-flex items-center gap-2 text-sm font-medium text-primary hover:text-primary/80"
+                            className="inline-flex w-full items-center justify-between gap-2 text-sm font-medium text-primary hover:text-primary/80"
                         >
                             Open start flow
                             <ArrowUpRight className="size-4" />
@@ -361,7 +364,7 @@ export function QuickstartContent({
                                 href={selectedReadme}
                                 rel="noreferrer"
                                 target="_blank"
-                                className="inline-flex items-center gap-2 text-sm font-medium text-primary hover:text-primary/80"
+                                className="inline-flex w-full items-center justify-between gap-2 text-sm font-medium text-primary hover:text-primary/80"
                             >
                                 Open {selectedLanguageLabel} README
                                 <ArrowUpRight className="size-4" />
@@ -371,7 +374,7 @@ export function QuickstartContent({
                         {showQuickstartLink && (
                             <a
                                 href={quickstartHref}
-                                className="inline-flex items-center gap-2 text-sm font-medium text-primary hover:text-primary/80"
+                                className="inline-flex w-full items-center justify-between gap-2 text-sm font-medium text-primary hover:text-primary/80"
                                 data-testid="quickstart-link"
                             >
                                 Open direct quickstart link
@@ -382,24 +385,27 @@ export function QuickstartContent({
                 </div>
             </aside>
 
-            <div className="space-y-6">
+            <div className="order-1 min-w-0 space-y-6 xl:order-2">
                 <section
                     id="http-quickstart"
                     className="overflow-hidden rounded-[1.75rem] border border-border bg-card shadow-soft"
                 >
-                    <div className="border-b border-border px-6 py-6 md:px-8">
+                    <div className="border-b border-border px-5 py-5 sm:px-6 md:px-8">
                         <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
                             <div className="max-w-3xl">
                                 <p className="text-xs font-medium tracking-[0.2em] text-muted-foreground">
                                     HTTP QUICKSTART
                                 </p>
-                                <h2 className="mt-3 text-3xl font-semibold tracking-tight">
-                                    Queue workflow over plain HTTP.
+                                <h2 className="mt-3 text-2xl font-semibold tracking-tight sm:text-3xl">
+                                    Preview the queue workflow over plain HTTP.
                                 </h2>
                                 <p className="mt-3 text-sm leading-7 text-muted-foreground md:text-base">
                                     Set the base URL and queue identifiers, then
                                     send and receive a message with cURL. The
                                     SDK examples below follow the same sequence.
+                                    This remains public as a technical preview
+                                    while the main product narrative focuses on
+                                    community funding.
                                 </p>
                             </div>
                             <div className="grid gap-3 sm:grid-cols-2">
@@ -417,7 +423,7 @@ export function QuickstartContent({
                         </div>
                     </div>
 
-                    <div className="space-y-6 px-6 py-6 md:px-8 md:py-8">
+                    <div className="space-y-6 px-5 py-5 sm:px-6 md:px-8 md:py-8">
                         <CodeBlock
                             code={envExample}
                             label="Environment"
@@ -474,13 +480,13 @@ function SdkGuidePanel({
             className="overflow-hidden rounded-[1.75rem] border border-border bg-card shadow-soft"
         >
             <div className="flex flex-col gap-6">
-                <div className="border-b border-border px-6 py-6 md:px-8">
+                <div className="border-b border-border px-5 py-5 sm:px-6 md:px-8">
                     <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
                         <div>
                             <p className="text-xs font-medium tracking-[0.2em] text-muted-foreground">
                                 SDK Guide
                             </p>
-                            <h2 className="mt-2 text-3xl font-semibold tracking-tight">
+                            <h2 className="mt-2 text-2xl font-semibold tracking-tight sm:text-3xl">
                                 SDK examples for both supported languages.
                             </h2>
                             <p className="mt-3 max-w-2xl text-sm leading-7 text-muted-foreground md:text-base">
@@ -490,7 +496,7 @@ function SdkGuidePanel({
                             </p>
                         </div>
                         <div
-                            className="inline-flex rounded-xl border border-border bg-muted/70 p-1"
+                            className="inline-flex w-full rounded-xl border border-border bg-muted/70 p-1 sm:w-auto"
                             role="tablist"
                             aria-label="SDK language"
                         >
@@ -509,7 +515,7 @@ function SdkGuidePanel({
                         </div>
                     </div>
                 </div>
-                <div className="space-y-4 px-6 pb-6 md:px-8 md:pb-8">
+                <div className="space-y-4 px-5 pb-5 sm:px-6 sm:pb-6 md:px-8 md:pb-8">
                     {sdkGuides.map((section, index) => (
                         <SdkGuideSectionCard
                             key={section.id}
@@ -541,7 +547,7 @@ function LanguageToggleButton({
             variant="ghost"
             size="sm"
             className={cn(
-                'min-w-24 gap-1.5 rounded-lg px-4',
+                'min-w-0 flex-1 gap-1.5 rounded-lg px-4 sm:min-w-24 sm:flex-none',
                 isActive
                     ? 'bg-card text-foreground shadow-sm hover:bg-card'
                     : 'text-muted-foreground hover:text-foreground',
@@ -567,7 +573,7 @@ function SdkGuideSectionCard({
 
     return (
         <article className="rounded-[1.5rem] border border-border bg-[linear-gradient(to_bottom,theme(colors.card),theme(colors.muted/20))] p-5 md:p-6">
-            <div className="flex items-start gap-4">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-start">
                 <div className="flex size-11 shrink-0 items-center justify-center rounded-2xl border border-primary/20 bg-primary/10 text-primary">
                     <section.icon className="size-5" />
                 </div>
@@ -639,7 +645,7 @@ function CodeBlock({
 
     return (
         <div className="space-y-3">
-            <div className="flex items-center justify-between gap-3">
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                 <p className="text-xs font-medium tracking-[0.2em] text-muted-foreground">
                     {label}
                 </p>
@@ -657,13 +663,13 @@ function CodeBlock({
             </div>
             <pre
                 className={cn(
-                    'overflow-x-auto rounded-2xl border p-5 font-mono text-sm leading-7',
+                    'max-w-full overflow-x-auto rounded-2xl border p-4 font-mono text-[11px] leading-6 sm:p-5 sm:text-sm sm:leading-7',
                     tone === 'hero'
                         ? 'border-primary/15 bg-[linear-gradient(180deg,theme(colors.muted),theme(colors.background))]'
                         : 'border-border bg-muted/70',
                 )}
             >
-                <code className="block min-w-max">
+                <code className="block min-w-max sm:min-w-max">
                     {highlightedLines.map((line, index) => (
                         <div
                             key={`${label}-${index}`}

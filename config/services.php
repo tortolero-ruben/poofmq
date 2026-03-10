@@ -56,6 +56,7 @@ return [
 
     'donations' => [
         'webhook_secret' => env('DONATION_WEBHOOK_SECRET'),
+        'donation_url' => env('DONATION_URL'),
     ],
 
 ];

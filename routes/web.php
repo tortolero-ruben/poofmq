@@ -3,11 +3,13 @@
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\FundingController;
 use Illuminate\Support\Facades\Route;
+use Inertia\Inertia;
 use Laravel\Fortify\Features;
 
-Route::inertia('/', 'welcome', [
+Route::get('/', fn () => Inertia::render('welcome', [
     'canRegister' => Features::enabled(Features::registration()),
-])->name('home');
+    'donationUrl' => config('services.donations.donation_url'),
+]))->name('home');
 
 Route::inertia('start', 'start/index')->name('start.index');
 Route::inertia('docs/quickstart', 'docs/quickstart')->name('docs.quickstart');

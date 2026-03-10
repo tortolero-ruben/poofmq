@@ -5,6 +5,7 @@ declare module '@inertiajs/core' {
         sharedPageProps: {
             name: string;
             auth: Auth;
+            donationUrl: string | null;
             sidebarOpen: boolean;
             turnstile: {
                 siteKey: string | null;

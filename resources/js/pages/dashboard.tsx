@@ -113,7 +113,7 @@ export default function Dashboard({ funding, billing, admin }: DashboardProps) {
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Dashboard" />
 
-            <div className="space-y-6 p-6">
+            <div className="space-y-6 p-4 sm:p-6">
                 <div className="flex flex-col gap-3 rounded-2xl border border-border/70 bg-card p-5 md:flex-row md:items-center md:justify-between">
                     <div className="space-y-1">
                         <p className="text-sm font-medium text-muted-foreground">
@@ -123,14 +123,18 @@ export default function Dashboard({ funding, billing, admin }: DashboardProps) {
                             Shared summary for all users
                         </h1>
                     </div>
-                    <div className="flex gap-3">
-                        <Button asChild variant="outline">
+                    <div className="flex flex-col gap-3 sm:flex-row">
+                        <Button
+                            asChild
+                            variant="outline"
+                            className="w-full sm:w-auto"
+                        >
                             <Link href={fundingIndex()}>
                                 Public funding page
                             </Link>
                         </Button>
                         {auth.is_admin && (
-                            <Button asChild>
+                            <Button asChild className="w-full sm:w-auto">
                                 <Link href={fundingAdmin()}>
                                     Admin funding details
                                 </Link>
@@ -148,7 +152,7 @@ export default function Dashboard({ funding, billing, admin }: DashboardProps) {
                             </CardDescription>
                         </CardHeader>
                         <CardContent>
-                            <p className="text-3xl font-semibold tracking-tight">
+                            <p className="text-2xl font-semibold tracking-tight sm:text-3xl">
                                 {formatCents(funding.summary.net_funding_cents)}
                             </p>
                         </CardContent>
@@ -162,7 +166,7 @@ export default function Dashboard({ funding, billing, admin }: DashboardProps) {
                             </CardDescription>
                         </CardHeader>
                         <CardContent>
-                            <p className="text-3xl font-semibold tracking-tight">
+                            <p className="text-2xl font-semibold tracking-tight sm:text-3xl">
                                 {billingLatest === null
                                     ? '$0.00'
                                     : formatCents(
@@ -180,7 +184,7 @@ export default function Dashboard({ funding, billing, admin }: DashboardProps) {
                             </CardDescription>
                         </CardHeader>
                         <CardContent>
-                            <p className="text-3xl font-semibold tracking-tight">
+                            <p className="text-2xl font-semibold tracking-tight sm:text-3xl">
                                 {billingLatest === null
                                     ? '$0.00'
                                     : formatCents(
@@ -198,7 +202,7 @@ export default function Dashboard({ funding, billing, admin }: DashboardProps) {
                             </CardDescription>
                         </CardHeader>
                         <CardContent>
-                            <p className="text-3xl font-semibold tracking-tight">
+                            <p className="text-2xl font-semibold tracking-tight sm:text-3xl">
                                 {billingLatest === null
                                     ? '$0.00'
                                     : formatCents(
@@ -231,7 +235,7 @@ export default function Dashboard({ funding, billing, admin }: DashboardProps) {
                                             <p className="text-xs font-medium tracking-[0.18em] text-muted-foreground uppercase">
                                                 Runway
                                             </p>
-                                            <p className="mt-2 text-3xl font-semibold tracking-tight">
+                                            <p className="mt-2 text-2xl font-semibold tracking-tight sm:text-3xl">
                                                 {billingLatest.runway_months.toFixed(
                                                     2,
                                                 )}{' '}
@@ -242,7 +246,7 @@ export default function Dashboard({ funding, billing, admin }: DashboardProps) {
                                             <p className="text-xs font-medium tracking-[0.18em] text-muted-foreground uppercase">
                                                 Coverage
                                             </p>
-                                            <p className="mt-2 text-3xl font-semibold tracking-tight">
+                                            <p className="mt-2 text-2xl font-semibold tracking-tight sm:text-3xl">
                                                 {billingLatest.coverage_percent.toFixed(
                                                     2,
                                                 )}
@@ -252,7 +256,7 @@ export default function Dashboard({ funding, billing, admin }: DashboardProps) {
                                     </div>
 
                                     <div className="rounded-xl border border-border/70 bg-muted/20 p-4">
-                                        <div className="flex items-center justify-between gap-3">
+                                        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                                             <p className="text-sm font-medium">
                                                 Snapshot status
                                             </p>

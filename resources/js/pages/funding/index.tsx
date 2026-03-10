@@ -70,13 +70,13 @@ export default function FundingPage({ funding, billing }: Props) {
             <Head title="Funding" />
 
             <div className="min-h-screen bg-[radial-gradient(circle_at_top,oklch(0.96_0.03_80),transparent_28%),linear-gradient(to_bottom,oklch(0.99_0_0),oklch(0.97_0.01_80))] text-foreground">
-                <div className="mx-auto flex max-w-6xl flex-col gap-10 px-6 py-8 lg:px-10">
+                <div className="mx-auto flex max-w-6xl flex-col gap-8 px-4 py-6 sm:px-6 sm:py-8 lg:px-10">
                     <header className="flex flex-col gap-4 border-b border-border/70 pb-6 md:flex-row md:items-center md:justify-between">
                         <div className="space-y-2">
                             <p className="text-sm font-medium tracking-[0.2em] text-muted-foreground uppercase">
                                 PoofMQ funding
                             </p>
-                            <h1 className="text-4xl font-semibold tracking-tight">
+                            <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">
                                 Public funding summary
                             </h1>
                             <p className="max-w-2xl text-sm text-muted-foreground">
@@ -86,22 +86,22 @@ export default function FundingPage({ funding, billing }: Props) {
                                 admin view.
                             </p>
                         </div>
-                        <div className="flex gap-3">
+                        <div className="flex flex-col gap-3 sm:flex-row">
                             <Link
                                 href={home()}
-                                className="inline-flex items-center justify-center rounded-lg border border-border bg-background px-4 py-2 text-sm font-medium transition hover:bg-muted"
+                                className="inline-flex w-full items-center justify-center rounded-lg border border-border bg-background px-4 py-2 text-sm font-medium transition hover:bg-muted sm:w-auto"
                             >
                                 Home
                             </Link>
                             <Link
                                 href={dashboard()}
-                                className="inline-flex items-center justify-center rounded-lg border border-border bg-background px-4 py-2 text-sm font-medium transition hover:bg-muted"
+                                className="inline-flex w-full items-center justify-center rounded-lg border border-border bg-background px-4 py-2 text-sm font-medium transition hover:bg-muted sm:w-auto"
                             >
                                 Dashboard
                             </Link>
                             <Link
                                 href={login()}
-                                className="inline-flex items-center justify-center rounded-lg bg-foreground px-4 py-2 text-sm font-semibold text-background transition hover:bg-foreground/90"
+                                className="inline-flex w-full items-center justify-center rounded-lg bg-foreground px-4 py-2 text-sm font-semibold text-background transition hover:bg-foreground/90 sm:w-auto"
                             >
                                 Admin sign in
                             </Link>
@@ -114,7 +114,7 @@ export default function FundingPage({ funding, billing }: Props) {
                                 <CardTitle>Workspace usage</CardTitle>
                             </CardHeader>
                             <CardContent>
-                                <p className="text-3xl font-semibold tracking-tight">
+                                <p className="text-2xl font-semibold tracking-tight sm:text-3xl">
                                     {latest === null
                                         ? '$0.00'
                                         : formatCents(
@@ -128,7 +128,7 @@ export default function FundingPage({ funding, billing }: Props) {
                                 <CardTitle>PoofMQ estimate</CardTitle>
                             </CardHeader>
                             <CardContent>
-                                <p className="text-3xl font-semibold tracking-tight">
+                                <p className="text-2xl font-semibold tracking-tight sm:text-3xl">
                                     {latest === null
                                         ? '$0.00'
                                         : formatCents(
@@ -142,7 +142,7 @@ export default function FundingPage({ funding, billing }: Props) {
                                 <CardTitle>Net funding</CardTitle>
                             </CardHeader>
                             <CardContent>
-                                <p className="text-3xl font-semibold tracking-tight">
+                                <p className="text-2xl font-semibold tracking-tight sm:text-3xl">
                                     {formatCents(
                                         funding.summary.net_funding_cents,
                                     )}
@@ -154,7 +154,7 @@ export default function FundingPage({ funding, billing }: Props) {
                                 <CardTitle>Funding gap</CardTitle>
                             </CardHeader>
                             <CardContent>
-                                <p className="text-3xl font-semibold tracking-tight">
+                                <p className="text-2xl font-semibold tracking-tight sm:text-3xl">
                                     {latest === null
                                         ? '$0.00'
                                         : formatCents(latest.funding_gap_cents)}
@@ -201,7 +201,7 @@ export default function FundingPage({ funding, billing }: Props) {
                                     <p className="text-xs font-medium tracking-[0.18em] text-muted-foreground uppercase">
                                         Runway
                                     </p>
-                                    <p className="mt-2 text-3xl font-semibold tracking-tight">
+                                    <p className="mt-2 text-2xl font-semibold tracking-tight sm:text-3xl">
                                         {latest === null
                                             ? '0.00 months'
                                             : `${latest.runway_months.toFixed(2)} months`}
@@ -211,7 +211,7 @@ export default function FundingPage({ funding, billing }: Props) {
                                     <p className="text-xs font-medium tracking-[0.18em] text-muted-foreground uppercase">
                                         Coverage
                                     </p>
-                                    <p className="mt-2 text-3xl font-semibold tracking-tight">
+                                    <p className="mt-2 text-2xl font-semibold tracking-tight sm:text-3xl">
                                         {latest === null
                                             ? '0%'
                                             : `${latest.coverage_percent.toFixed(2)}%`}
@@ -235,7 +235,7 @@ export default function FundingPage({ funding, billing }: Props) {
                                     billing.snapshots.map((snapshot) => (
                                         <div
                                             key={snapshot.id}
-                                            className="grid gap-2 rounded-lg border border-border/60 p-4 md:grid-cols-4"
+                                            className="grid gap-2 rounded-lg border border-border/60 p-4 sm:grid-cols-2 xl:grid-cols-4"
                                         >
                                             <p className="text-sm font-medium">
                                                 {new Date(

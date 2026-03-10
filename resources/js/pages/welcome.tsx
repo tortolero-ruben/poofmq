@@ -4,7 +4,27 @@ import DeveloperKeyDialog from '@/components/developer-key-dialog';
 import InstantStartDialog from '@/components/instant-start-dialog';
 import LiveDemoPanel from '@/components/live-demo-panel';
 import { dashboard, login } from '@/routes';
-import { index as fundingIndex } from '@/routes/funding';
+
+const useCases = [
+    {
+        icon: 'auto_awesome',
+        title: 'Background processing',
+        summary:
+            'Move time-consuming work off the request path so your app can respond quickly while workers process jobs in the background.',
+    },
+    {
+        icon: 'hub',
+        title: 'Event buffering',
+        summary:
+            'Accept incoming events once, push them into PoofMQ, and let downstream services process them without blocking delivery.',
+    },
+    {
+        icon: 'routine',
+        title: 'Scheduled workflows',
+        summary:
+            'Run recurring jobs and internal workflows through a shared queue instead of relying on fragile one-off task wiring.',
+    },
+] as const;
 
 export default function Welcome({
     canRegister = true,
@@ -40,9 +60,8 @@ export default function Welcome({
                 />
             </Head>
 
-            <div className="relative flex min-h-screen flex-col bg-background font-sans text-foreground">
-                {/* Header */}
-                <header className="sticky top-0 z-50 flex flex-col items-start justify-between gap-6 border-b border-border bg-background/80 px-6 py-5 backdrop-blur-md md:flex-row md:items-center lg:px-12">
+            <div className="relative flex min-h-screen flex-col overflow-x-clip bg-background font-sans text-foreground">
+                <header className="sticky top-0 z-50 flex flex-col items-start justify-between gap-4 border-b border-border bg-background/80 px-4 py-4 backdrop-blur-md sm:px-6 md:flex-row md:items-center lg:px-12">
                     <div className="flex items-center gap-3">
                         <span className="material-symbols-outlined text-4xl text-primary">
                             cyclone
@@ -51,7 +70,7 @@ export default function Welcome({
                             PoofMQ
                         </h2>
                     </div>
-                    <nav className="flex flex-wrap gap-x-8 gap-y-2 text-base font-medium">
+                    <nav className="flex w-full flex-wrap gap-x-5 gap-y-2 text-sm font-medium sm:text-base md:w-auto">
                         <a
                             className="text-muted-foreground transition-colors hover:text-primary"
                             href="#features"
@@ -60,9 +79,9 @@ export default function Welcome({
                         </a>
                         <a
                             className="text-muted-foreground transition-colors hover:text-primary"
-                            href="#pricing"
+                            href="#use-cases"
                         >
-                            Pricing
+                            Use Cases
                         </a>
                         <a
                             className="text-muted-foreground transition-colors hover:text-primary"
@@ -70,24 +89,12 @@ export default function Welcome({
                         >
                             Docs
                         </a>
-                        <Link
-                            className="text-muted-foreground transition-colors hover:text-primary"
-                            href={fundingIndex()}
-                        >
-                            Funding
-                        </Link>
-                        <a
-                            className="text-muted-foreground transition-colors hover:text-primary"
-                            href="#vault"
-                        >
-                            Vault
-                        </a>
                     </nav>
-                    <div className="flex gap-3">
+                    <div className="flex w-full flex-col gap-3 sm:flex-row md:w-auto">
                         {auth.user ? (
                             <Link
                                 href={dashboard()}
-                                className="inline-flex items-center justify-center rounded-lg bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground transition-all hover:bg-primary/90 hover:shadow-[0_0_20px_rgba(245,158,11,0.3)]"
+                                className="inline-flex w-full items-center justify-center rounded-lg bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground transition-all hover:bg-primary/90 hover:shadow-[0_0_20px_rgba(245,158,11,0.3)] sm:w-auto"
                             >
                                 Dashboard
                             </Link>
@@ -95,7 +102,7 @@ export default function Welcome({
                             <>
                                 <Link
                                     href={login()}
-                                    className="inline-flex items-center justify-center rounded-lg border border-border bg-transparent px-5 py-2.5 text-sm font-medium transition-all hover:bg-muted"
+                                    className="inline-flex w-full items-center justify-center rounded-lg border border-border bg-transparent px-5 py-2.5 text-sm font-medium transition-all hover:bg-muted sm:w-auto"
                                 >
                                     Sign in
                                 </Link>
@@ -105,7 +112,7 @@ export default function Welcome({
                                         onClick={() =>
                                             setIsDeveloperKeyDialogOpen(true)
                                         }
-                                        className="inline-flex items-center justify-center rounded-lg bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground transition-all hover:bg-primary/90 hover:shadow-[0_0_20px_rgba(245,158,11,0.3)]"
+                                        className="inline-flex w-full items-center justify-center rounded-lg bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground transition-all hover:bg-primary/90 hover:shadow-[0_0_20px_rgba(245,158,11,0.3)] sm:w-auto"
                                     >
                                         Get free dev key
                                     </button>
@@ -116,14 +123,13 @@ export default function Welcome({
                 </header>
 
                 <main className="flex-1">
-                    {/* Hero Section */}
-                    <section className="border-b border-border bg-background px-6 py-16 lg:px-12 lg:py-24">
-                        <div className="mx-auto max-w-7xl">
-                            <div className="mb-8">
+                    <section className="border-b border-border bg-background px-4 py-12 sm:px-6 sm:py-16 lg:px-12 lg:py-24">
+                        <div className="mx-auto max-w-7xl min-w-0">
+                            <div className="mb-6 sm:mb-8">
                                 <div className="mb-6 inline-flex items-center rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
                                     System status: v1.4 stable
                                 </div>
-                                <h1 className="text-5xl font-bold tracking-tight sm:text-7xl">
+                                <h1 className="text-4xl font-bold tracking-tight sm:text-5xl lg:text-7xl">
                                     Simple,
                                     <br />
                                     <span className="text-primary">Free</span>
@@ -132,17 +138,17 @@ export default function Welcome({
                                 </h1>
                             </div>
 
-                            <p className="mb-12 max-w-2xl text-lg text-muted-foreground">
+                            <p className="mb-10 max-w-2xl text-base text-muted-foreground sm:mb-12 sm:text-lg">
                                 Start instantly with a free queue, or get a free
                                 dev key for reusable SDK access. Same simple
                                 message queue. Two ways to start.
                             </p>
 
-                            <div className="grid gap-8 lg:grid-cols-[1.2fr_0.8fr]">
+                            <div className="grid min-w-0 gap-6 lg:grid-cols-[minmax(0,1.2fr)_minmax(0,0.8fr)] lg:gap-8">
                                 <LiveDemoPanel />
 
-                                <div className="grid gap-6">
-                                    <div className="rounded-2xl border border-border bg-card p-8">
+                                <div className="grid min-w-0 gap-6">
+                                    <div className="min-w-0 rounded-2xl border border-border bg-card p-5 sm:p-8">
                                         <div className="mb-4 inline-flex items-center rounded-md bg-muted px-2 py-1 text-xs font-semibold text-muted-foreground">
                                             Fastest path
                                         </div>
@@ -154,11 +160,11 @@ export default function Welcome({
                                             start pushing and popping messages
                                             with almost no setup.
                                         </p>
-                                        <div className="mb-6 overflow-x-auto rounded-lg border border-border bg-muted p-4 font-mono text-sm">
+                                        <div className="mb-6 max-w-full overflow-x-auto rounded-lg border border-border bg-muted p-4 font-mono text-xs sm:text-sm">
                                             <p className="text-muted-foreground">
                                                 # Push message
                                             </p>
-                                            <p>
+                                            <p className="min-w-max">
                                                 curl -X POST
                                                 https://poofmq.com/api/v1/q/
                                                 <span className="text-primary">
@@ -174,13 +180,13 @@ export default function Welcome({
                                                     true,
                                                 )
                                             }
-                                            className="inline-flex items-center justify-center rounded-lg bg-foreground px-6 py-3 text-base font-semibold text-background transition-all hover:bg-foreground/90"
+                                            className="inline-flex w-full items-center justify-center rounded-lg bg-foreground px-6 py-3 text-base font-semibold text-background transition-all hover:bg-foreground/90 sm:w-auto"
                                         >
                                             Start instantly
                                         </button>
                                     </div>
 
-                                    <div className="rounded-2xl border-2 border-primary bg-card p-8 shadow-[0_0_20px_rgba(245,158,11,0.15)]">
+                                    <div className="min-w-0 rounded-2xl border-2 border-primary bg-card p-5 shadow-[0_0_20px_rgba(245,158,11,0.15)] sm:p-8">
                                         <div className="mb-4 inline-flex items-center rounded-md bg-primary px-2 py-1 text-xs font-semibold text-primary-foreground">
                                             Best for SDKs
                                         </div>
@@ -192,22 +198,24 @@ export default function Welcome({
                                             start using the SDK with a reusable
                                             project-scoped credential.
                                         </p>
-                                        <div className="mb-6 overflow-x-auto rounded-lg border border-border bg-muted p-4 font-mono text-sm">
+                                        <div className="mb-6 max-w-full overflow-x-auto rounded-lg border border-border bg-muted p-4 font-mono text-xs sm:text-sm">
                                             <p className="text-muted-foreground">
                                                 # Node SDK
                                             </p>
-                                            <p>npm install poofmq</p>
+                                            <p className="min-w-max">
+                                                npm install poofmq
+                                            </p>
                                             <p className="mt-2 text-muted-foreground">
                                                 # Use your key
                                             </p>
-                                            <p>
+                                            <p className="min-w-max">
                                                 new PoofmqClient({`{ apiKey }`})
                                             </p>
                                         </div>
                                         {auth.user ? (
                                             <Link
                                                 href={dashboard()}
-                                                className="inline-flex items-center justify-center rounded-lg bg-primary px-6 py-3 text-base font-semibold text-primary-foreground transition-all hover:bg-primary/90"
+                                                className="inline-flex w-full items-center justify-center rounded-lg bg-primary px-6 py-3 text-base font-semibold text-primary-foreground transition-all hover:bg-primary/90 sm:w-auto"
                                             >
                                                 Go to dashboard
                                             </Link>
@@ -219,7 +227,7 @@ export default function Welcome({
                                                         true,
                                                     )
                                                 }
-                                                className="inline-flex items-center justify-center rounded-lg bg-primary px-6 py-3 text-base font-semibold text-primary-foreground transition-all hover:bg-primary/90 hover:shadow-[0_0_20px_rgba(245,158,11,0.3)]"
+                                                className="inline-flex w-full items-center justify-center rounded-lg bg-primary px-6 py-3 text-base font-semibold text-primary-foreground transition-all hover:bg-primary/90 hover:shadow-[0_0_20px_rgba(245,158,11,0.3)] sm:w-auto"
                                             >
                                                 Get free dev key
                                             </button>
@@ -230,12 +238,11 @@ export default function Welcome({
                         </div>
                     </section>
 
-                    {/* Features Section */}
                     <section
                         id="features"
                         className="grid bg-muted/30 md:grid-cols-2"
                     >
-                        <div className="group border-b border-border p-8 transition-colors hover:bg-muted/50 md:border-r">
+                        <div className="group border-b border-border p-6 transition-colors hover:bg-muted/50 sm:p-8 md:border-r">
                             <span className="mb-6 block inline-flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10 text-primary">
                                 <span className="material-symbols-outlined text-2xl">
                                     bolt
@@ -249,7 +256,7 @@ export default function Welcome({
                                 messages without a long setup flow.
                             </p>
                         </div>
-                        <div className="group border-b border-border p-8 transition-colors hover:bg-muted/50">
+                        <div className="group border-b border-border p-6 transition-colors hover:bg-muted/50 sm:p-8">
                             <span className="mb-6 block inline-flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10 text-primary">
                                 <span className="material-symbols-outlined text-2xl">
                                     lock
@@ -263,7 +270,7 @@ export default function Welcome({
                                 project isolation, and key management.
                             </p>
                         </div>
-                        <div className="group border-b border-border p-8 transition-colors hover:bg-muted/50 md:border-r md:border-b-0">
+                        <div className="group border-b border-border p-6 transition-colors hover:bg-muted/50 sm:p-8 md:border-r md:border-b-0">
                             <span className="mb-6 block inline-flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10 text-primary">
                                 <span className="material-symbols-outlined text-2xl">
                                     favorite
@@ -274,11 +281,10 @@ export default function Welcome({
                             </h3>
                             <p className="text-muted-foreground">
                                 No VC strings attached. Subsidized by the
-                                community via the Runway Vault to keep the
-                                servers spinning for all.
+                                community to keep the servers spinning for all.
                             </p>
                         </div>
-                        <div className="group p-8 transition-colors hover:bg-muted/50">
+                        <div className="group p-6 transition-colors hover:bg-muted/50 sm:p-8">
                             <span className="mb-6 block inline-flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10 text-primary">
                                 <span className="material-symbols-outlined text-2xl">
                                     code
@@ -294,241 +300,37 @@ export default function Welcome({
                         </div>
                     </section>
 
-                    {/* Runway Vault Section */}
                     <section
-                        id="vault"
-                        className="border-b border-border bg-muted/30 px-6 py-24"
+                        id="use-cases"
+                        className="mx-auto max-w-6xl px-4 py-16 sm:px-6 sm:py-20 lg:py-24"
                     >
-                        <div className="mx-auto max-w-4xl">
-                            <div className="mb-12 flex flex-col items-start gap-4">
-                                <div className="inline-flex items-center rounded-lg bg-foreground px-3 py-1.5 text-sm font-semibold text-background">
-                                    Runway Vault Status
-                                </div>
-                                <p className="max-w-2xl text-lg text-muted-foreground">
-                                    The Runway Vault covers our monthly
-                                    infrastructure costs to keep PoofMQ free for
-                                    everyone.
-                                </p>
-                            </div>
-                            <div className="rounded-3xl border border-border bg-card p-10">
-                                <div className="mb-8 flex items-end justify-between">
-                                    <div>
-                                        <p className="mb-2 text-xs font-semibold tracking-wider text-muted-foreground uppercase">
-                                            Current revenue stream
-                                        </p>
-                                        <p className="text-4xl font-bold text-primary">
-                                            $420 / $500
-                                        </p>
-                                    </div>
-                                    <p className="text-6xl font-bold text-muted-foreground/30">
-                                        84%
-                                    </p>
-                                </div>
-                                <div className="mb-10 h-6 w-full overflow-hidden rounded-full bg-muted">
-                                    <div
-                                        className="h-full rounded-full bg-gradient-to-r from-primary to-primary/80"
-                                        style={{ width: '84%' }}
-                                    ></div>
-                                </div>
-                                <div className="mb-10 rounded-xl bg-muted/50 p-5">
-                                    <p className="text-sm text-muted-foreground">
-                                        Current Railway API billing and Redis
-                                        cluster overhead covered by community
-                                        tips.
-                                    </p>
-                                </div>
-                                <button className="w-full rounded-xl border border-primary py-4 font-semibold text-primary transition-all hover:bg-primary hover:text-primary-foreground hover:shadow-[0_0_20px_rgba(245,158,11,0.3)]">
-                                    Drop a tip in the vault
-                                </button>
-                            </div>
-                        </div>
-                    </section>
-
-                    {/* Pricing Section */}
-                    <section
-                        id="pricing"
-                        className="mx-auto max-w-6xl px-6 py-24"
-                    >
-                        <h2 className="mb-4 text-center text-4xl font-bold tracking-tight md:text-5xl">
-                            Pricing
+                        <h2 className="mb-4 text-center text-3xl font-bold tracking-tight sm:text-4xl md:text-5xl">
+                            Use Cases
                         </h2>
-                        <p className="mb-16 text-center text-lg text-muted-foreground">
-                            All tiers are subsidized by the community tip jar.
-                            Zero VC funding.
+                        <p className="mb-10 text-center text-base text-muted-foreground sm:mb-16 sm:text-lg">
+                            Three simple ways teams can start building with
+                            PoofMQ without redesigning their stack first.
                         </p>
 
-                        <div className="grid gap-6 md:grid-cols-3">
-                            {/* Instant Tier */}
-                            <div className="flex flex-col rounded-3xl border border-border bg-card p-8">
-                                <h3 className="mb-2 text-xl font-bold tracking-tight">
-                                    Instant
-                                </h3>
-                                <div className="mb-8">
-                                    <span className="text-4xl font-bold">
-                                        $0
-                                    </span>
-                                    <span className="ml-1 text-muted-foreground">
-                                        /free
-                                    </span>
-                                </div>
-                                <ul className="mb-10 flex-1 space-y-4">
-                                    <li className="flex items-center gap-3">
-                                        <span className="material-symbols-outlined text-primary">
-                                            check
-                                        </span>
-                                        <span className="text-muted-foreground">
-                                            Free queue access
-                                        </span>
-                                    </li>
-                                    <li className="flex items-center gap-3">
-                                        <span className="material-symbols-outlined text-primary">
-                                            check
-                                        </span>
-                                        <span className="text-muted-foreground">
-                                            10,000 req/month
-                                        </span>
-                                    </li>
-                                    <li className="flex items-center gap-3">
-                                        <span className="material-symbols-outlined text-primary">
-                                            check
-                                        </span>
-                                        <span className="text-muted-foreground">
-                                            10min message TTL
-                                        </span>
-                                    </li>
-                                </ul>
-                                <button
-                                    type="button"
-                                    onClick={() =>
-                                        setIsInstantStartDialogOpen(true)
-                                    }
-                                    className="w-full rounded-lg border border-border py-3 text-sm font-semibold transition-all hover:bg-muted"
+                        <div className="grid min-w-0 gap-6 md:grid-cols-3">
+                            {useCases.map((useCase) => (
+                                <article
+                                    key={useCase.title}
+                                    className="flex flex-col rounded-3xl border border-border bg-card p-6 sm:p-8"
                                 >
-                                    Start instantly
-                                </button>
-                            </div>
-
-                            {/* Developer Key Tier */}
-                            <div className="relative flex flex-col rounded-3xl border-2 border-primary bg-card p-8 shadow-[0_0_20px_rgba(245,158,11,0.15)]">
-                                <div className="absolute -top-3 left-6 inline-flex items-center rounded-full bg-foreground px-3 py-1 text-xs font-semibold text-background">
-                                    Fully subsidized
-                                </div>
-                                <h3 className="mb-2 text-xl font-bold tracking-tight">
-                                    Dev Key
-                                </h3>
-                                <div className="mb-8">
-                                    <span className="text-4xl font-bold">
-                                        $0
+                                    <span className="mb-6 inline-flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                                        <span className="material-symbols-outlined text-2xl">
+                                            {useCase.icon}
+                                        </span>
                                     </span>
-                                    <span className="ml-1 text-muted-foreground">
-                                        /free
-                                    </span>
-                                </div>
-                                <ul className="mb-10 flex-1 space-y-4">
-                                    <li className="flex items-center gap-3">
-                                        <span className="material-symbols-outlined text-primary">
-                                            check
-                                        </span>
-                                        <span className="text-muted-foreground">
-                                            Project management
-                                        </span>
-                                    </li>
-                                    <li className="flex items-center gap-3">
-                                        <span className="material-symbols-outlined text-primary">
-                                            check
-                                        </span>
-                                        <span className="text-muted-foreground">
-                                            Scoped API keys
-                                        </span>
-                                    </li>
-                                    <li className="flex items-center gap-3">
-                                        <span className="material-symbols-outlined text-primary">
-                                            check
-                                        </span>
-                                        <span className="text-muted-foreground">
-                                            Zero-knowledge encryption
-                                        </span>
-                                    </li>
-                                    <li className="flex items-center gap-3">
-                                        <span className="material-symbols-outlined text-primary">
-                                            check
-                                        </span>
-                                        <span className="text-muted-foreground">
-                                            1,000,000 req
-                                        </span>
-                                    </li>
-                                    <li className="flex items-center gap-3">
-                                        <span className="material-symbols-outlined text-primary">
-                                            check
-                                        </span>
-                                        <span className="text-muted-foreground">
-                                            24h TTL
-                                        </span>
-                                    </li>
-                                </ul>
-                                {auth.user ? (
-                                    <Link
-                                        href={dashboard()}
-                                        className="w-full rounded-lg bg-primary py-3 text-center text-sm font-semibold text-primary-foreground transition-all hover:bg-primary/90"
-                                    >
-                                        Go to dashboard
-                                    </Link>
-                                ) : (
-                                    <button
-                                        type="button"
-                                        onClick={() =>
-                                            setIsDeveloperKeyDialogOpen(true)
-                                        }
-                                        className="w-full rounded-lg bg-primary py-3 text-sm font-semibold text-primary-foreground transition-all hover:bg-primary/90 hover:shadow-[0_0_20px_rgba(245,158,11,0.3)]"
-                                    >
-                                        Get free dev key
-                                    </button>
-                                )}
-                            </div>
-
-                            {/* Tip Jar Tier */}
-                            <div className="flex flex-col rounded-3xl border border-border bg-card p-8">
-                                <h3 className="mb-2 text-xl font-bold tracking-tight">
-                                    Tip Jar
-                                </h3>
-                                <div className="mb-2">
-                                    <span className="text-4xl font-bold">
-                                        Custom
-                                    </span>
-                                </div>
-                                <p className="mb-8 text-sm text-muted-foreground italic">
-                                    "Help keep the lights on for the community."
-                                </p>
-                                <ul className="mb-10 flex-1 space-y-4">
-                                    <li className="flex items-center gap-3">
-                                        <span className="material-symbols-outlined text-primary">
-                                            volunteer_activism
-                                        </span>
-                                        <span className="text-muted-foreground">
-                                            Support OSS devs
-                                        </span>
-                                    </li>
-                                    <li className="flex items-center gap-3">
-                                        <span className="material-symbols-outlined text-primary">
-                                            star
-                                        </span>
-                                        <span className="text-muted-foreground">
-                                            Donor badge
-                                        </span>
-                                    </li>
-                                    <li className="flex items-center gap-3">
-                                        <span className="material-symbols-outlined text-primary">
-                                            priority_high
-                                        </span>
-                                        <span className="text-muted-foreground">
-                                            Priority support
-                                        </span>
-                                    </li>
-                                </ul>
-                                <button className="w-full rounded-lg border border-border py-3 text-sm font-semibold transition-all hover:bg-muted">
-                                    Contribute
-                                </button>
-                            </div>
+                                    <h3 className="mb-3 text-xl font-bold tracking-tight">
+                                        {useCase.title}
+                                    </h3>
+                                    <p className="text-muted-foreground">
+                                        {useCase.summary}
+                                    </p>
+                                </article>
+                            ))}
                         </div>
                     </section>
                 </main>
@@ -543,8 +345,7 @@ export default function Welcome({
                     onOpenChange={setIsDeveloperKeyDialogOpen}
                 />
 
-                {/* Footer */}
-                <footer className="border-t border-border bg-card px-6 py-8 lg:px-12">
+                <footer className="border-t border-border bg-card px-4 py-6 sm:px-6 sm:py-8 lg:px-12">
                     <div className="flex flex-col items-start justify-between gap-8 md:flex-row md:items-center">
                         <div className="flex items-center gap-3">
                             <span className="material-symbols-outlined text-3xl text-primary">
@@ -558,7 +359,7 @@ export default function Welcome({
                             2024 PoofMQ. Built with Golang & pride. Zero
                             tracking.
                         </p>
-                        <div className="flex gap-6">
+                        <div className="flex w-full gap-6 md:w-auto">
                             <a
                                 className="text-muted-foreground transition-colors hover:text-primary"
                                 href="https://github.com/poofmq"

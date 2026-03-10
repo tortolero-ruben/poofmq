@@ -2,15 +2,13 @@
 
 use Inertia\Testing\AssertableInertia as Assert;
 
-use function Pest\Laravel\get;
-
-test('quickstart page can be viewed without authentication', function () {
+it('renders the welcome page with the donation url prop', function () {
     config()->set('services.donations.donation_url', 'https://ko-fi.com/poofmq');
 
-    get('/docs/quickstart')
-        ->assertOk()
+    $this->get('/')
+        ->assertSuccessful()
         ->assertInertia(fn (Assert $page) => $page
-            ->component('docs/quickstart')
+            ->component('welcome')
             ->where('donationUrl', 'https://ko-fi.com/poofmq')
             ->etc());
 });

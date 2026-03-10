@@ -45,5 +45,31 @@
     </head>
     <body class="font-sans antialiased">
         @inertia
+
+        <script>
+            (function () {
+                if (window.__poofmqKoFiOverlayLoaded) {
+                    return;
+                }
+
+                window.__poofmqKoFiOverlayLoaded = true;
+
+                const script = document.createElement('script');
+                script.src = 'https://storage.ko-fi.com/cdn/scripts/overlay-widget.js';
+                script.async = true;
+                script.onload = function () {
+                    if (window.kofiWidgetOverlay?.draw) {
+                        window.kofiWidgetOverlay.draw('poofmq', {
+                            type: 'floating-chat',
+                            'floating-chat.donateButton.text': 'Donate',
+                            'floating-chat.donateButton.background-color': '#fcbf47',
+                            'floating-chat.donateButton.text-color': '#323842',
+                        });
+                    }
+                };
+
+                document.body.appendChild(script);
+            })();
+        </script>
     </body>
 </html>

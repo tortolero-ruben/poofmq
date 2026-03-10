@@ -1,4 +1,5 @@
 import { Head, Link, usePage } from '@inertiajs/react';
+import KoFiButton from '@/components/ko-fi-button';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -106,7 +107,10 @@ function formatAge(minutes: number | null): string {
 }
 
 export default function Dashboard({ funding, billing, admin }: DashboardProps) {
-    const { auth } = usePage().props as { auth: { is_admin: boolean } };
+    const { auth, donationUrl } = usePage().props as {
+        auth: { is_admin: boolean };
+        donationUrl: string | null;
+    };
     const billingLatest = billing.latest;
 
     return (
@@ -114,33 +118,55 @@ export default function Dashboard({ funding, billing, admin }: DashboardProps) {
             <Head title="Dashboard" />
 
             <div className="space-y-6 p-4 sm:p-6">
-                <div className="flex flex-col gap-3 rounded-2xl border border-border/70 bg-card p-5 md:flex-row md:items-center md:justify-between">
-                    <div className="space-y-1">
-                        <p className="text-sm font-medium text-muted-foreground">
-                            Funding overview
-                        </p>
-                        <h1 className="text-2xl font-semibold tracking-tight">
-                            Shared summary for all users
-                        </h1>
-                    </div>
-                    <div className="flex flex-col gap-3 sm:flex-row">
-                        <Button
-                            asChild
-                            variant="outline"
-                            className="w-full sm:w-auto"
-                        >
-                            <Link href={fundingIndex()}>
-                                Public funding page
-                            </Link>
-                        </Button>
-                        {auth.is_admin && (
-                            <Button asChild className="w-full sm:w-auto">
-                                <Link href={fundingAdmin()}>
-                                    Admin funding details
+                <div className="grid gap-4 xl:grid-cols-[minmax(0,1.3fr)_minmax(0,0.7fr)]">
+                    <div className="flex flex-col gap-3 rounded-2xl border border-border/70 bg-card p-5 md:flex-row md:items-center md:justify-between">
+                        <div className="space-y-1">
+                            <p className="text-sm font-medium text-muted-foreground">
+                                Funding overview
+                            </p>
+                            <h1 className="text-2xl font-semibold tracking-tight">
+                                Shared summary for all users
+                            </h1>
+                        </div>
+                        <div className="flex flex-col gap-3 sm:flex-row">
+                            <Button
+                                asChild
+                                variant="outline"
+                                className="w-full sm:w-auto"
+                            >
+                                <Link href={fundingIndex()}>
+                                    Public funding page
                                 </Link>
                             </Button>
-                        )}
+                            {auth.is_admin && (
+                                <Button asChild className="w-full sm:w-auto">
+                                    <Link href={fundingAdmin()}>
+                                        Admin funding details
+                                    </Link>
+                                </Button>
+                            )}
+                        </div>
                     </div>
+
+                    {donationUrl && (
+                        <div className="rounded-2xl border border-[#72a4f2]/40 bg-linear-to-br from-[#72a4f2]/14 via-background to-background p-5 shadow-[0_18px_60px_rgba(114,164,242,0.12)]">
+                            <p className="text-xs font-semibold tracking-[0.2em] text-[#72a4f2] uppercase">
+                                Community funded
+                            </p>
+                            <h2 className="mt-2 text-xl font-semibold tracking-tight">
+                                Keep PoofMQ free for everyone
+                            </h2>
+                            <p className="mt-2 text-sm text-muted-foreground">
+                                Donations help cover hosting and queue
+                                infrastructure so the public free tier can stay
+                                online.
+                            </p>
+                            <KoFiButton
+                                href={donationUrl}
+                                className="mt-4 w-full sm:w-auto"
+                            />
+                        </div>
+                    )}
                 </div>
 
                 <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-4">

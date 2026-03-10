@@ -8,6 +8,7 @@ it('includes active month boost visibility in dashboard props', function () {
     config()->set('poofmq_capacity.active_month_boost_enabled', true);
 
     $user = User::factory()->create();
+    config()->set('poofmq.admin_emails', [$user->email]);
 
     ActiveMonthBoost::factory()->create([
         'multiplier' => 3,
@@ -19,9 +20,9 @@ it('includes active month boost visibility in dashboard props', function () {
 
     $response->assertOk();
 
-    expect($response->inertiaProps('capacity.base_limit_per_minute'))->toBe(60)
-        ->and($response->inertiaProps('capacity.effective_limit_per_minute'))->toBe(180)
-        ->and($response->inertiaProps('capacity.is_boost_active'))->toBeTrue()
-        ->and($response->inertiaProps('capacity.boost_multiplier'))->toBe(3)
-        ->and($response->inertiaProps('capacity.boost_expires_at'))->not->toBeNull();
+    expect($response->inertiaProps('admin.capacity.base_limit_per_minute'))->toBe(60)
+        ->and($response->inertiaProps('admin.capacity.effective_limit_per_minute'))->toBe(180)
+        ->and($response->inertiaProps('admin.capacity.is_boost_active'))->toBeTrue()
+        ->and($response->inertiaProps('admin.capacity.boost_multiplier'))->toBe(3)
+        ->and($response->inertiaProps('admin.capacity.boost_expires_at'))->not->toBeNull();
 });

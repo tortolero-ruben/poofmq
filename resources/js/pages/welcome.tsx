@@ -2,6 +2,7 @@ import { Head, Link, usePage } from '@inertiajs/react';
 import { useState } from 'react';
 import DeveloperKeyDialog from '@/components/developer-key-dialog';
 import InstantStartDialog from '@/components/instant-start-dialog';
+import KoFiButton from '@/components/ko-fi-button';
 import LiveDemoPanel from '@/components/live-demo-panel';
 import { dashboard, login } from '@/routes';
 
@@ -32,6 +33,7 @@ export default function Welcome({
     canRegister?: boolean;
 }) {
     const { auth } = usePage().props;
+    const { donationUrl } = usePage().props;
     const [isInstantStartDialogOpen, setIsInstantStartDialogOpen] =
         useState(false);
     const [isDeveloperKeyDialogOpen, setIsDeveloperKeyDialogOpen] =
@@ -235,6 +237,34 @@ export default function Welcome({
                                     </div>
                                 </div>
                             </div>
+
+                            {donationUrl && (
+                                <div className="mt-8 rounded-3xl border border-[#72a4f2]/40 bg-linear-to-r from-[#72a4f2]/14 via-background to-background p-5 shadow-[0_18px_60px_rgba(114,164,242,0.14)] sm:mt-10 sm:p-6">
+                                    <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
+                                        <div className="max-w-2xl space-y-2">
+                                            <p className="text-xs font-semibold tracking-[0.22em] text-[#72a4f2] uppercase">
+                                                Community funded
+                                            </p>
+                                            <h2 className="text-2xl font-bold tracking-tight sm:text-3xl">
+                                                Keep PoofMQ free for the next
+                                                developer.
+                                            </h2>
+                                            <p className="text-sm text-muted-foreground sm:text-base">
+                                                PoofMQ stays online because the
+                                                community helps cover hosting
+                                                and queue infrastructure. If it
+                                                saves you time, support it on
+                                                Ko-fi.
+                                            </p>
+                                        </div>
+                                        <KoFiButton
+                                            href={donationUrl}
+                                            size="lg"
+                                            className="w-full sm:w-auto"
+                                        />
+                                    </div>
+                                </div>
+                            )}
                         </div>
                     </section>
 

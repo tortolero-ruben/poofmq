@@ -1,22 +1,72 @@
-import { Head } from '@inertiajs/react';
+import { Head, Link, usePage } from '@inertiajs/react';
+import AppLogo from '@/components/app-logo';
 import { QuickstartContent } from '@/components/quickstart-content';
-import AppLayout from '@/layouts/app-layout';
-import type { BreadcrumbItem } from '@/types';
-import { dashboard } from '@/routes';
+import { dashboard, home, login } from '@/routes';
 import { quickstart as docsQuickstart } from '@/routes/docs';
+import { index as fundingIndex } from '@/routes/funding';
 import { index as startIndex } from '@/routes/start';
 
-const breadcrumbs: BreadcrumbItem[] = [
-    { title: 'Dashboard', href: dashboard() },
-    { title: 'Quickstart', href: docsQuickstart.url() },
-];
-
 export default function Quickstart() {
+    const { auth } = usePage().props as {
+        auth: {
+            user: { id: number } | null;
+        };
+    };
+
     return (
-        <AppLayout breadcrumbs={breadcrumbs}>
+        <div className="min-h-screen bg-background">
             <Head title="Quickstart" />
-            <div className="flex h-full flex-1 flex-col gap-6 p-4 sm:gap-8 sm:p-6">
-                <div>
+            <header className="border-b border-border bg-background/95 backdrop-blur">
+                <div className="mx-auto flex max-w-7xl flex-col gap-4 px-4 py-4 sm:px-6 lg:flex-row lg:items-center lg:justify-between">
+                    <Link href={home()} className="flex items-center">
+                        <AppLogo />
+                    </Link>
+
+                    <nav className="flex flex-wrap items-center gap-4 text-sm font-medium text-muted-foreground">
+                        <Link
+                            href={startIndex()}
+                            className="hover:text-foreground"
+                        >
+                            Start instantly
+                        </Link>
+                        <Link
+                            href={fundingIndex()}
+                            className="hover:text-foreground"
+                        >
+                            Public funding
+                        </Link>
+                        <a
+                            href="https://github.com/tortolero-ruben/poofmq"
+                            target="_blank"
+                            rel="noreferrer"
+                            className="hover:text-foreground"
+                        >
+                            Repository
+                        </a>
+                    </nav>
+
+                    <div className="flex items-center gap-3">
+                        {auth.user === null ? (
+                            <Link
+                                href={login()}
+                                className="inline-flex items-center justify-center rounded-lg border border-border px-4 py-2 text-sm font-medium transition-colors hover:bg-muted"
+                            >
+                                Sign in
+                            </Link>
+                        ) : (
+                            <Link
+                                href={dashboard()}
+                                className="inline-flex items-center justify-center rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90"
+                            >
+                                Dashboard
+                            </Link>
+                        )}
+                    </div>
+                </div>
+            </header>
+
+            <main className="mx-auto flex h-full w-full max-w-7xl flex-1 flex-col gap-6 p-4 sm:gap-8 sm:p-6">
+                <div className="pt-2 sm:pt-4">
                     <h1
                         className="text-2xl font-semibold tracking-tight sm:text-3xl"
                         id="quickstart-heading"
@@ -34,7 +84,7 @@ export default function Quickstart() {
                     startHref={startIndex.url()}
                     showQuickstartLink={false}
                 />
-            </div>
-        </AppLayout>
+            </main>
+        </div>
     );
 }

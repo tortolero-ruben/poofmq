@@ -15,10 +15,14 @@ npm install @poofmq/node
 ```javascript
 import { PoofmqClient } from '@poofmq/node';
 
+const baseUrl = process.env.POOFMQ_BASE_URL;
+
+if (!baseUrl) {
+    throw new Error('Set POOFMQ_BASE_URL to the poofMQ API origin.');
+}
+
 const client = new PoofmqClient({
-    baseUrl:
-        process.env.POOFMQ_BASE_URL ||
-        'https://go-api-production-ac36.up.railway.app',
+    baseUrl,
     apiKey: process.env.POOFMQ_API_KEY, // optional
 });
 
@@ -38,6 +42,8 @@ if (message) {
     );
 }
 ```
+
+`POOFMQ_BASE_URL` should point to the API origin from the quickstart, not `https://poofmq.com`.
 
 ### Client-side encrypted push (zero-knowledge)
 
@@ -67,5 +73,5 @@ make sdk-generate
 cd sdks/node
 npm install
 npm run build
-GO_API_BASE_URL=http://localhost:8080 npm run test:integration
+POOFMQ_BASE_URL=http://localhost:8080 npm run test:integration
 ```

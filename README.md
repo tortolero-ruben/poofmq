@@ -4,6 +4,12 @@ This repository contains the Laravel management portal and a baseline Go API ser
 
 **Using poofMQ?** To send and receive messages, start with the [Quickstart](docs/quickstart.md). The portal Developers page (when logged in) and in-app docs mirror the same guide.
 
+## Docs Map
+
+- [Quickstart](docs/quickstart.md) - queue creation, auth options, HTTP examples, and SDK getting-started snippets.
+- [SDK overview](sdks/README.md) - language support and regeneration workflow.
+- [Documentation index](docs/README.md) - maintainer docs, ADRs, and release-process references.
+
 ## Service Boundaries
 
 | Service | Role | Data Ownership |
@@ -164,7 +170,7 @@ Or run the script directly: `./railway/add-redis.sh` or `./railway/add-redis.sh 
 
 ## Quickstart and SDKs
 
-See [docs/quickstart.md](docs/quickstart.md) for API base URL, Node.js and Python SDK install and usage. The portal **Developers** page (when logged in) links to in-repo quickstart and SDK docs.
+See [docs/quickstart.md](docs/quickstart.md) for queue setup, API base URL guidance, and Node.js and Python SDK usage. The portal **Developers** page (when logged in) links to the same guide, while [sdks/README.md](sdks/README.md) summarizes all language SDKs.
 
 ## Convenience Commands
 

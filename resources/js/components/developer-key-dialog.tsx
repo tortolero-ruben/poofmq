@@ -290,7 +290,7 @@ export default function DeveloperKeyDialog({
     const sdkSnippet =
         success === null
             ? ''
-            : `npm install poofmq\n\nimport { PoofmqClient } from "poofmq";\n\nconst client = new PoofmqClient({\n  baseUrl: "https://poofmq.com",\n  apiKey: "${success.plain_text_key}",\n});\n\nconst result = await client.push("my-queue", "user.created", { user_id: "123" });\nconsole.log(result.messageId);`;
+            : `npm install @poofmq/node\n\nimport { PoofmqClient } from "@poofmq/node";\n\nconst client = new PoofmqClient({\n  baseUrl: process.env.POOFMQ_BASE_URL!,\n  apiKey: "${success.plain_text_key}",\n});\n\nconst result = await client.push("my-queue-id", "user.created", { user_id: "123" });\nconsole.log(result.messageId);`;
 
     return (
         <Dialog open={isOpen} onOpenChange={handleOpenChange}>

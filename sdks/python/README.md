@@ -13,11 +13,17 @@ pip install poofmq
 ### Plaintext push and pop
 
 ```python
-from poofmq import PoofmqClient
 import os
 
+from poofmq import PoofmqClient
+
+base_url = os.environ.get("POOFMQ_BASE_URL")
+
+if base_url is None:
+    raise RuntimeError("Set POOFMQ_BASE_URL to the poofMQ API origin.")
+
 client = PoofmqClient(
-    base_url=os.environ.get("POOFMQ_BASE_URL", "https://go-api-production-ac36.up.railway.app"),
+    base_url=base_url,
     api_key=os.environ.get("POOFMQ_API_KEY"),  # optional
 )
 
@@ -30,6 +36,8 @@ message = client.pop("my-queue-id")
 if message:
     print("Event:", message.envelope.event_type, message.envelope.payload)
 ```
+
+`POOFMQ_BASE_URL` should point to the API origin from the quickstart, not `https://poofmq.com`.
 
 ### Client-side encrypted push (zero-knowledge)
 

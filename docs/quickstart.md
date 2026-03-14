@@ -41,6 +41,8 @@ Use this when you want reusable credentials for the SDK, projects, and key manag
 - Production API: `https://go-api-production-ac36.up.railway.app`
 - Local API: `http://localhost:8080`
 
+Use the portal URL to create queues and keys. Use the API URL for `push`, `pop`, and SDK clients.
+
 ## Environment variables
 
 ```bash
@@ -50,6 +52,8 @@ export POOFMQ_API_KEY="your-dev-key"
 ```
 
 `POOFMQ_API_KEY` is optional. Start without it if you are using the queue you created from `START INSTANTLY`.
+
+`POOFMQ_BASE_URL` should point to the API origin, not `https://poofmq.com`.
 
 ## HTTP Quickstart
 
@@ -68,6 +72,10 @@ Recommendation:
 
 - Use `START INSTANTLY` to prove the flow
 - Use `GET FREE DEV KEY` for anything you want to keep using
+
+Common setup mistake:
+
+- `https://poofmq.com` is the portal. Your queue operations should target the API origin in `POOFMQ_BASE_URL`.
 
 Authenticated request example:
 
@@ -244,3 +252,9 @@ client.pop(queue_id, **options)
 - OpenAPI artifact: `dist/openapi/v1/poofmq.json`
 - Compatibility policy: `docs/compatibility-policy.md`
 - SDK verification notes: `docs/openapi-sdk-verification.md`
+
+## Next steps
+
+- Node SDK details: `sdks/node/README.md`
+- Python SDK details: `sdks/python/README.md`
+- SDK overview and regeneration workflow: `sdks/README.md`

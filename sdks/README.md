@@ -26,3 +26,5 @@ See [docs/sdk-versioning.md](../docs/sdk-versioning.md) for versioning and relea
 
 - **Node:** `npm install @poofmq/node`
 - **Python:** `pip install poofmq`
+
+Use [docs/quickstart.md](../docs/quickstart.md) first to get a queue ID and the correct API base URL. In SDK examples, `POOFMQ_BASE_URL` should point to the poofMQ API origin, not the portal origin.

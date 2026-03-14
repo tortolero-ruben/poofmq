@@ -48,8 +48,6 @@ return [
         'GO_API_ALLOW_ORIGIN' => ['owner' => 'go-api', 'consumers' => ['go-api']],
         'CLOUDFLARE_ACCOUNT_ID' => ['owner' => 'go-api', 'consumers' => ['go-api']],
         'CLOUDFLARE_API_TOKEN' => ['owner' => 'go-api', 'consumers' => ['go-api']],
-        'RAILWAY_ENVIRONMENT_NAME' => ['owner' => 'laravel-portal', 'consumers' => ['laravel-portal', 'go-api']],
-        'RAILWAY_PROJECT_ID' => ['owner' => 'laravel-portal', 'consumers' => ['laravel-portal', 'go-api']],
     ],
 
     'deployment_targets' => [

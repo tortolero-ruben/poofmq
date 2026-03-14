@@ -25,7 +25,6 @@ import { dashboard } from '@/routes';
 import { index as apiKeysIndex } from '@/routes/api-keys';
 import { index as developersIndex } from '@/routes/developers';
 import { quickstart as docsQuickstart } from '@/routes/docs';
-import { admin as fundingAdmin } from '@/routes/funding';
 import { index as projectsIndex } from '@/routes/projects';
 
 const REPOSITORY_URL = 'https://github.com/tortolero-ruben/poofmq';
@@ -67,18 +66,8 @@ const footerNavItems: NavItem[] = [
 ];
 
 export function AppSidebar() {
-    const { auth } = usePage().props as { auth: { is_admin: boolean } };
-    const mainItems = auth.is_admin
-        ? [
-              ...mainNavItems.slice(0, 3),
-              {
-                  title: 'Funding Admin',
-                  href: fundingAdmin(),
-                  icon: WalletCards,
-              },
-              ...mainNavItems.slice(3),
-          ]
-        : mainNavItems;
+    usePage();
+    const mainItems = mainNavItems;
     const footerItems = footerNavItems;
 
     return (

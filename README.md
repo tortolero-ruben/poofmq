@@ -151,7 +151,6 @@ You do not need to set a custom build or pre-deploy command in the dashboard; th
 - `QUEUE_CONNECTION=redis`, `CACHE_STORE=redis`, `SESSION_DRIVER=redis`.  
 - `SESSION_SECURE_COOKIE=true` (Railway serves over HTTPS).  
 - `LOG_CHANNEL=stderr`, `LOG_STDERR_FORMATTER=\Monolog\Formatter\JsonFormatter` (optional; for Railway log aggregation).  
-- Optional: `RAILWAY_API_TOKEN`, `RAILWAY_PROJECT_ID` (for dashboard billing/runway).  
 - Optional: `CLOUDFLARE_TURNSTILE_SITE_KEY`, `CLOUDFLARE_TURNSTILE_SECRET_KEY` (for Sandbox).  
 - Optional: `GO_API_BASE_URL` (if you deploy the Go API elsewhere and point the portal at it).
 

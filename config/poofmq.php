@@ -7,7 +7,7 @@ return [
     | Admin Emails
     |--------------------------------------------------------------------------
     |
-    | Users with these email addresses can access internal funding and
+    | Users with these email addresses can access internal dashboard and
     | infrastructure details that should not be visible to general users.
     |
     */

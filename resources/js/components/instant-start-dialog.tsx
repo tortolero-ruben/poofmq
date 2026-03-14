@@ -105,6 +105,18 @@ export default function InstantStartDialog({
         });
     }, []);
 
+    const removeTurnstile = useCallback(() => {
+        if (
+            turnstileWidgetIdRef.current === null ||
+            window.turnstile === undefined
+        ) {
+            return;
+        }
+
+        window.turnstile.remove(turnstileWidgetIdRef.current);
+        turnstileWidgetIdRef.current = null;
+    }, []);
+
     const resetTurnstile = useCallback(() => {
         setTurnstileToken('');
 
@@ -126,10 +138,7 @@ export default function InstantStartDialog({
             return;
         }
 
-        if (turnstileWidgetIdRef.current !== null) {
-            window.turnstile.remove(turnstileWidgetIdRef.current);
-            turnstileWidgetIdRef.current = null;
-        }
+        removeTurnstile();
 
         turnstileWidgetIdRef.current = window.turnstile.render(
             turnstileContainerRef.current,
@@ -158,7 +167,7 @@ export default function InstantStartDialog({
                 },
             },
         );
-    }, [clearTurnstileError, isOpen, siteKey]);
+    }, [clearTurnstileError, isOpen, removeTurnstile, siteKey]);
 
     useEffect(() => {
         if (!isOpen || siteKey === null || isLocalDevelopment) {
@@ -168,7 +177,9 @@ export default function InstantStartDialog({
         if (window.turnstile !== undefined) {
             renderTurnstile();
 
-            return;
+            return () => {
+                removeTurnstile();
+            };
         }
 
         const source =
@@ -186,6 +197,7 @@ export default function InstantStartDialog({
 
             return () => {
                 existingScript.removeEventListener('load', handleLoad);
+                removeTurnstile();
             };
         }
 
@@ -198,8 +210,9 @@ export default function InstantStartDialog({
 
         return () => {
             script.removeEventListener('load', handleLoad);
+            removeTurnstile();
         };
-    }, [isLocalDevelopment, isOpen, renderTurnstile, siteKey]);
+    }, [isLocalDevelopment, isOpen, removeTurnstile, renderTurnstile, siteKey]);
 
     const handleOpenChange = (open: boolean) => {
         onOpenChange(open);
@@ -208,7 +221,8 @@ export default function InstantStartDialog({
             setErrors({});
             setStatusMessage(null);
             setQueue(null);
-            resetTurnstile();
+            setTurnstileToken('');
+            removeTurnstile();
         }
     };
 

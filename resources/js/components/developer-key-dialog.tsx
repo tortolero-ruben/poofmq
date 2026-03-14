@@ -108,6 +108,18 @@ export default function DeveloperKeyDialog({
         });
     }, []);
 
+    const removeTurnstile = useCallback(() => {
+        if (
+            turnstileWidgetIdRef.current === null ||
+            window.turnstile === undefined
+        ) {
+            return;
+        }
+
+        window.turnstile.remove(turnstileWidgetIdRef.current);
+        turnstileWidgetIdRef.current = null;
+    }, []);
+
     const resetTurnstile = useCallback(() => {
         setTurnstileToken('');
 
@@ -129,10 +141,7 @@ export default function DeveloperKeyDialog({
             return;
         }
 
-        if (turnstileWidgetIdRef.current !== null) {
-            window.turnstile.remove(turnstileWidgetIdRef.current);
-            turnstileWidgetIdRef.current = null;
-        }
+        removeTurnstile();
 
         turnstileWidgetIdRef.current = window.turnstile.render(
             turnstileContainerRef.current,
@@ -161,7 +170,7 @@ export default function DeveloperKeyDialog({
                 },
             },
         );
-    }, [clearTurnstileError, isOpen, siteKey]);
+    }, [clearTurnstileError, isOpen, removeTurnstile, siteKey]);
 
     useEffect(() => {
         if (!isOpen || siteKey === null || isLocalDevelopment) {
@@ -171,7 +180,9 @@ export default function DeveloperKeyDialog({
         if (window.turnstile !== undefined) {
             renderTurnstile();
 
-            return;
+            return () => {
+                removeTurnstile();
+            };
         }
 
         const source =
@@ -189,6 +200,7 @@ export default function DeveloperKeyDialog({
 
             return () => {
                 existingScript.removeEventListener('load', handleLoad);
+                removeTurnstile();
             };
         }
 
@@ -201,8 +213,9 @@ export default function DeveloperKeyDialog({
 
         return () => {
             script.removeEventListener('load', handleLoad);
+            removeTurnstile();
         };
-    }, [isLocalDevelopment, isOpen, renderTurnstile, siteKey]);
+    }, [isLocalDevelopment, isOpen, removeTurnstile, renderTurnstile, siteKey]);
 
     const handleOpenChange = (open: boolean) => {
         onOpenChange(open);
@@ -212,7 +225,8 @@ export default function DeveloperKeyDialog({
             setStatusMessage(null);
             setSuccess(null);
             setEmail('');
-            resetTurnstile();
+            setTurnstileToken('');
+            removeTurnstile();
         }
     };
 

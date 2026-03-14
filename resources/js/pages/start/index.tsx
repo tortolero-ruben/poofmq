@@ -90,6 +90,18 @@ export default function SandboxCreatePage() {
         });
     }, []);
 
+    const removeTurnstile = useCallback(() => {
+        if (
+            turnstileWidgetIdRef.current === null ||
+            window.turnstile === undefined
+        ) {
+            return;
+        }
+
+        window.turnstile.remove(turnstileWidgetIdRef.current);
+        turnstileWidgetIdRef.current = null;
+    }, []);
+
     const resetTurnstile = useCallback(() => {
         setTurnstileToken('');
 
@@ -110,10 +122,7 @@ export default function SandboxCreatePage() {
             return;
         }
 
-        if (turnstileWidgetIdRef.current !== null) {
-            window.turnstile.remove(turnstileWidgetIdRef.current);
-            turnstileWidgetIdRef.current = null;
-        }
+        removeTurnstile();
 
         turnstileWidgetIdRef.current = window.turnstile.render(
             turnstileContainerRef.current,
@@ -142,7 +151,7 @@ export default function SandboxCreatePage() {
                 },
             },
         );
-    }, [clearTurnstileError, siteKey]);
+    }, [clearTurnstileError, removeTurnstile, siteKey]);
 
     useEffect(() => {
         if (siteKey === null) {
@@ -152,7 +161,9 @@ export default function SandboxCreatePage() {
         if (window.turnstile !== undefined) {
             renderTurnstile();
 
-            return;
+            return () => {
+                removeTurnstile();
+            };
         }
 
         const source =
@@ -170,6 +181,7 @@ export default function SandboxCreatePage() {
 
             return () => {
                 existingScript.removeEventListener('load', handleLoad);
+                removeTurnstile();
             };
         }
 
@@ -182,8 +194,9 @@ export default function SandboxCreatePage() {
 
         return () => {
             script.removeEventListener('load', handleLoad);
+            removeTurnstile();
         };
-    }, [renderTurnstile, siteKey]);
+    }, [removeTurnstile, renderTurnstile, siteKey]);
 
     const handleCreateSandboxQueue = async (
         event: FormEvent<HTMLFormElement>,

@@ -68,8 +68,6 @@ it('tracks critical infrastructure env keys from .env.example in the ownership m
         'GO_API_ALLOW_ORIGIN',
         'CLOUDFLARE_ACCOUNT_ID',
         'CLOUDFLARE_API_TOKEN',
-        'RAILWAY_ENVIRONMENT_NAME',
-        'RAILWAY_PROJECT_ID',
     ];
 
     foreach ($criticalKeys as $key) {

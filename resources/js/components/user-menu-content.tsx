@@ -1,4 +1,4 @@
-import { Link, router, usePage } from '@inertiajs/react';
+import { Link, router } from '@inertiajs/react';
 import { LogOut, Settings } from 'lucide-react';
 import {
     DropdownMenuGroup,
@@ -10,7 +10,6 @@ import { UserInfo } from '@/components/user-info';
 import { useMobileNavigation } from '@/hooks/use-mobile-navigation';
 import type { User } from '@/types';
 import { logout } from '@/routes';
-import { admin as fundingAdmin } from '@/routes/funding';
 import { edit } from '@/routes/profile';
 
 type Props = {
@@ -19,7 +18,6 @@ type Props = {
 
 export function UserMenuContent({ user }: Props) {
     const cleanup = useMobileNavigation();
-    const { auth } = usePage().props as { auth: { is_admin: boolean } };
 
     const handleLogout = () => {
         cleanup();
@@ -46,18 +44,6 @@ export function UserMenuContent({ user }: Props) {
                         Settings
                     </Link>
                 </DropdownMenuItem>
-                {auth.is_admin && (
-                    <DropdownMenuItem asChild>
-                        <Link
-                            className="block w-full cursor-pointer"
-                            href={fundingAdmin()}
-                            prefetch
-                            onClick={cleanup}
-                        >
-                            Funding Admin
-                        </Link>
-                    </DropdownMenuItem>
-                )}
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
             <DropdownMenuItem asChild>

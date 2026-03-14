@@ -11,9 +11,7 @@ class ObservabilityAlertService
      *     error_rate_percent: float,
      *     avg_push_latency_ms: float,
      *     avg_pop_latency_ms: float,
-     *     redis_memory_bytes: int,
-     *     burn_rate_cents_per_day: float,
-     *     railway_snapshot_age_minutes: int
+     *     redis_memory_bytes: int
      * }  $metrics
      * @return list<array{key: string, severity: string, message: string, runbook: string}>
      */
@@ -51,22 +49,6 @@ class ObservabilityAlertService
                 key: 'redis_memory_bytes',
                 severity: 'warning',
                 message: sprintf('Redis memory usage is %d bytes.', $metrics['redis_memory_bytes'])
-            );
-        }
-
-        if ((float) $metrics['burn_rate_cents_per_day'] > (float) ($thresholds['burn_rate_cents_per_day'] ?? 0)) {
-            $alerts[] = $this->buildAlert(
-                key: 'burn_rate_cents_per_day',
-                severity: 'warning',
-                message: sprintf('Burn rate is %.2f cents/day.', $metrics['burn_rate_cents_per_day'])
-            );
-        }
-
-        if ((int) $metrics['railway_snapshot_age_minutes'] > (int) ($thresholds['railway_snapshot_max_age_minutes'] ?? 0)) {
-            $alerts[] = $this->buildAlert(
-                key: 'railway_snapshot_stale',
-                severity: 'warning',
-                message: sprintf('Railway funding data is stale at %d minutes old.', $metrics['railway_snapshot_age_minutes'])
             );
         }
 

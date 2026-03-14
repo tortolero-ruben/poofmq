@@ -4,17 +4,6 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | Capacity Bank Budget Baseline
-    |--------------------------------------------------------------------------
-    |
-    | The default monthly infrastructure budget target for runway calculations.
-    | Values are stored in integer cents to keep accounting deterministic.
-    |
-    */
-    'monthly_budget_cents' => (int) env('POOFMQ_MONTHLY_BUDGET_CENTS', 500),
-
-    /*
-    |--------------------------------------------------------------------------
     | Global Throughput Limits
     |--------------------------------------------------------------------------
     |

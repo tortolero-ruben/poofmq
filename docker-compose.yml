@@ -53,8 +53,6 @@ services:
       DB_DATABASE: poofmq
       DB_USERNAME: poofmq
       DB_PASSWORD: poofmq
-      RAILWAY_ENVIRONMENT_NAME: local
-      RAILWAY_PROJECT_ID: local
     ports:
       - "${GO_API_HOST_PORT:-8080}:8080"
 

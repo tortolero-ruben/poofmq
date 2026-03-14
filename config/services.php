@@ -40,14 +40,6 @@ return [
         'timeout_seconds' => (int) env('GO_API_TIMEOUT_SECONDS', 5),
     ],
 
-    'railway' => [
-        'api_token' => env('RAILWAY_API_TOKEN'),
-        'workspace_id' => env('RAILWAY_WORKSPACE_ID'),
-        'project_id' => env('RAILWAY_PROJECT_ID'),
-        'graphql_endpoint' => env('RAILWAY_GRAPHQL_ENDPOINT', 'https://backboard.railway.com/graphql/v2'),
-        'timeout_seconds' => (int) env('RAILWAY_API_TIMEOUT_SECONDS', 10),
-    ],
-
     'turnstile' => [
         'site_key' => env('CLOUDFLARE_TURNSTILE_SITE_KEY'),
         'secret_key' => env('CLOUDFLARE_TURNSTILE_SECRET_KEY'),
@@ -55,7 +47,6 @@ return [
     ],
 
     'donations' => [
-        'webhook_secret' => env('DONATION_WEBHOOK_SECRET'),
         'donation_url' => env('DONATION_URL'),
     ],
 

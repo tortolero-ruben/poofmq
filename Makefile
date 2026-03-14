@@ -43,9 +43,8 @@ validate-rate-limit:
 validate-observability:
 	php artisan test --compact \
 		tests/Feature/Dashboard/DashboardObservabilityTest.php \
-		tests/Feature/Dashboard/DashboardBillingRunwayTest.php \
-		tests/Feature/Infrastructure/BudgetAssumptionsTest.php \
-		tests/Feature/Jobs/SyncRailwayBillingSnapshotTest.php
+		tests/Feature/DashboardTest.php \
+		tests/Unit/Services/ObservabilityAlertServiceTest.php
 
 validate-ttl:
 	cd services/go-api && go test ./internal/queue -run 'TestClientIntegrationExpiresMessagesUnderTTLPressureWithTestcontainers|TestClient_TTLAlwaysEnforcedOnPush|TestClient_ExpiredMessage' -count=1

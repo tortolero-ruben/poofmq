@@ -14,12 +14,16 @@ test('authenticated users can visit the dashboard', function () {
     $user = User::factory()->create();
     $this->actingAs($user);
 
-    $this->get(route('dashboard'))
-        ->assertOk()
+    $response = $this->get(route('dashboard'));
+
+    $response->assertOk()
         ->assertInertia(fn (Assert $page) => $page
             ->component('dashboard')
             ->where('donationUrl', 'https://ko-fi.com/poofmq')
-            ->has('funding.summary')
-            ->has('billing')
+            ->where('admin', null)
             ->etc());
+
+    expect($response->inertiaProps())->toHaveKey('donationUrl', 'https://ko-fi.com/poofmq')
+        ->not->toHaveKey('funding')
+        ->not->toHaveKey('billing');
 });

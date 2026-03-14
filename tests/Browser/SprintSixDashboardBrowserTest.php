@@ -14,8 +14,11 @@ it('renders sprint 6 dashboard panels without javascript errors', function () {
     $this->actingAs($user);
 
     visit('/dashboard')
-        ->assertSee('Funding overview')
-        ->assertSee('Net funding')
+        ->assertSee('Dashboard')
         ->assertSee('Support me on Ko-fi')
+        ->assertDontSee('Funding overview')
+        ->assertDontSee('Net funding')
+        ->assertDontSee('Current spend')
+        ->assertDontSee('Funding gap')
         ->assertNoJavaScriptErrors();
 });

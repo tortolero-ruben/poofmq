@@ -1,10 +1,11 @@
 import { Head, Link, usePage } from '@inertiajs/react';
 import { useState } from 'react';
+import AppLogo from '@/components/app-logo';
 import DeveloperKeyDialog from '@/components/developer-key-dialog';
 import InstantStartDialog from '@/components/instant-start-dialog';
 import KoFiButton from '@/components/ko-fi-button';
 import LiveDemoPanel from '@/components/live-demo-panel';
-import { dashboard, login } from '@/routes';
+import { dashboard, home, login } from '@/routes';
 
 const useCases = [
     {
@@ -32,8 +33,7 @@ export default function Welcome({
 }: {
     canRegister?: boolean;
 }) {
-    const { auth } = usePage().props;
-    const { donationUrl } = usePage().props;
+    const { auth, version, donationUrl } = usePage().props;
     const [isInstantStartDialogOpen, setIsInstantStartDialogOpen] =
         useState(false);
     const [isDeveloperKeyDialogOpen, setIsDeveloperKeyDialogOpen] =
@@ -64,14 +64,12 @@ export default function Welcome({
 
             <div className="relative flex min-h-screen flex-col overflow-x-clip bg-background font-sans text-foreground">
                 <header className="sticky top-0 z-50 flex flex-col items-start justify-between gap-4 border-b border-border bg-background/80 px-4 py-4 backdrop-blur-md sm:px-6 md:flex-row md:items-center lg:px-12">
-                    <div className="flex items-center gap-3">
-                        <span className="material-symbols-outlined text-4xl text-primary">
-                            cyclone
-                        </span>
-                        <h2 className="text-2xl font-bold tracking-tight">
-                            PoofMQ
-                        </h2>
-                    </div>
+                    <Link
+                        href={home()}
+                        className="rounded focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:outline-none"
+                    >
+                        <AppLogo size="lg" />
+                    </Link>
                     <nav className="flex w-full flex-wrap gap-x-5 gap-y-2 text-sm font-medium sm:text-base md:w-auto">
                         <a
                             className="text-muted-foreground transition-colors hover:text-primary"
@@ -129,7 +127,7 @@ export default function Welcome({
                         <div className="mx-auto max-w-7xl min-w-0">
                             <div className="mb-6 sm:mb-8">
                                 <div className="mb-6 inline-flex items-center rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
-                                    System status: v1.4 stable
+                                    System status: v{version} stable
                                 </div>
                                 <h1 className="text-4xl font-bold tracking-tight sm:text-5xl lg:text-7xl">
                                     Simple,
@@ -378,15 +376,13 @@ export default function Welcome({
                 <footer className="border-t border-border bg-card px-4 py-6 sm:px-6 sm:py-8 lg:px-12">
                     <div className="flex flex-col items-start justify-between gap-8 md:flex-row md:items-center">
                         <div className="flex items-center gap-3">
-                            <span className="material-symbols-outlined text-3xl text-primary">
-                                cyclone
-                            </span>
-                            <span className="text-lg font-semibold">
-                                PoofMQ v1.4
+                            <AppLogo size="md" />
+                            <span className="text-lg font-semibold text-muted-foreground">
+                                v{version}
                             </span>
                         </div>
                         <p className="text-sm text-muted-foreground">
-                            2024 PoofMQ. Built with Golang & pride. Zero
+                            © 2026 PoofMQ. Built with Golang & pride. Zero
                             tracking.
                         </p>
                         <div className="flex w-full gap-6 md:w-auto">

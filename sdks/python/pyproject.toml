@@ -8,7 +8,16 @@ version = "1.0.0"
 description = "poofMQ Python SDK - push/pop queue client with optional client-side encryption"
 readme = "README.md"
 requires-python = ">=3.9"
-license = { text = "MIT" }
+license = "MIT"
+authors = [{ name = "poofMQ", email = "support@poofmq.com" }]
+keywords = ["poofmq", "queue", "api", "sdk"]
+classifiers = [
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.9",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+]
 dependencies = [
   "cryptography>=42",
   "pydantic>=2",
@@ -21,6 +30,11 @@ dependencies = [
 dev = [
   "pytest>=7",
 ]
+
+[project.urls]
+Homepage = "https://poofmq.com/docs/quickstart"
+Repository = "https://github.com/rubybear-lgtm/poofmq"
+Documentation = "https://poofmq.com/docs/quickstart"
 
 [tool.setuptools.packages.find]
 where = [".", "generated"]

@@ -392,7 +392,7 @@ export default function Welcome({
                         <div className="flex w-full gap-6 md:w-auto">
                             <a
                                 className="text-muted-foreground transition-colors hover:text-primary"
-                                href="https://github.com/poofmq"
+                                href="https://github.com/rubybear-lgtm/poofmq"
                             >
                                 <span className="material-symbols-outlined text-2xl">
                                     terminal

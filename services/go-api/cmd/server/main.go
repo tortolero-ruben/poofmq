@@ -13,11 +13,11 @@ import (
 
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"github.com/redis/go-redis/v9"
-	poofmqv1 "github.com/tortolero-ruben/poofmq/gen/go/poofmq"
-	"github.com/tortolero-ruben/poofmq/services/go-api/internal/config"
-	"github.com/tortolero-ruben/poofmq/services/go-api/internal/metrics"
-	"github.com/tortolero-ruben/poofmq/services/go-api/internal/queue"
-	"github.com/tortolero-ruben/poofmq/services/go-api/internal/service"
+	poofmqv1 "github.com/rubybear-lgtm/poofmq/gen/go/poofmq"
+	"github.com/rubybear-lgtm/poofmq/services/go-api/internal/config"
+	"github.com/rubybear-lgtm/poofmq/services/go-api/internal/metrics"
+	"github.com/rubybear-lgtm/poofmq/services/go-api/internal/queue"
+	"github.com/rubybear-lgtm/poofmq/services/go-api/internal/service"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 )

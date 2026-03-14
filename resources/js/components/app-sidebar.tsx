@@ -27,7 +27,7 @@ import { index as developersIndex } from '@/routes/developers';
 import { quickstart as docsQuickstart } from '@/routes/docs';
 import { index as projectsIndex } from '@/routes/projects';
 
-const REPOSITORY_URL = 'https://github.com/tortolero-ruben/poofmq';
+const REPOSITORY_URL = 'https://github.com/rubybear-lgtm/poofmq';
 
 const mainNavItems: NavItem[] = [
     {

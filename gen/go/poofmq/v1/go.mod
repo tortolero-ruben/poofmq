@@ -1,4 +1,4 @@
-module github.com/tortolero-ruben/poofmq/gen/go/poofmq
+module github.com/rubybear-lgtm/poofmq/gen/go/poofmq
 
 go 1.24.0
 

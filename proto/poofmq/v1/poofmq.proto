@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package poofmq.v1;
 
-option go_package = "github.com/rubyapps/poofmq/gen/go/poofmq/v1;poofmqv1";
+option go_package = "github.com/rubybear-lgtm/poofmq/gen/go/poofmq/v1;poofmqv1";
 
 import "google/api/annotations.proto";
 import "google/protobuf/struct.proto";

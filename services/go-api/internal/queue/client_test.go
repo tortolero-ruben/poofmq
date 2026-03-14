@@ -7,7 +7,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/tortolero-ruben/poofmq/services/go-api/internal/testhelpers"
+	"github.com/rubybear-lgtm/poofmq/services/go-api/internal/testhelpers"
 )
 
 func TestClient_PushPop(t *testing.T) {

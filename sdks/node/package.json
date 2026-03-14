@@ -26,7 +26,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/tortolero-ruben/poofmq.git",
+    "url": "git+https://github.com/rubybear-lgtm/poofmq.git",
     "directory": "sdks/node"
   },
   "homepage": "https://poofmq.com/docs/quickstart",

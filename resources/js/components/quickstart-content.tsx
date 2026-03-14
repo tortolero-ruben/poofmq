@@ -19,7 +19,7 @@ import { Button } from '@/components/ui/button';
 import { useClipboard } from '@/hooks/use-clipboard';
 import { cn } from '@/lib/utils';
 
-const REPOSITORY_URL = 'https://github.com/tortolero-ruben/poofmq';
+const REPOSITORY_URL = 'https://github.com/rubybear-lgtm/poofmq';
 const SDK_READMES = {
     node: `${REPOSITORY_URL}/blob/main/sdks/node/README.md`,
     python: `${REPOSITORY_URL}/blob/main/sdks/python/README.md`,

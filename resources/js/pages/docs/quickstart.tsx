@@ -29,7 +29,7 @@ export default function Quickstart() {
                             Start instantly
                         </Link>
                         <a
-                            href="https://github.com/tortolero-ruben/poofmq"
+                            href="https://github.com/rubybear-lgtm/poofmq"
                             target="_blank"
                             rel="noreferrer"
                             className="hover:text-foreground"

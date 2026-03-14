@@ -5,9 +5,9 @@ import (
 	"testing"
 	"time"
 
-	poofmqv1 "github.com/tortolero-ruben/poofmq/gen/go/poofmq"
-	"github.com/tortolero-ruben/poofmq/services/go-api/internal/queue"
-	"github.com/tortolero-ruben/poofmq/services/go-api/internal/testhelpers"
+	poofmqv1 "github.com/rubybear-lgtm/poofmq/gen/go/poofmq"
+	"github.com/rubybear-lgtm/poofmq/services/go-api/internal/queue"
+	"github.com/rubybear-lgtm/poofmq/services/go-api/internal/testhelpers"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/structpb"

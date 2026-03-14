@@ -6,7 +6,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/tortolero-ruben/poofmq/services/go-api/internal/config"
+	"github.com/rubybear-lgtm/poofmq/services/go-api/internal/config"
 )
 
 func TestQueueKey(t *testing.T) {

@@ -1,4 +1,4 @@
-module github.com/tortolero-ruben/poofmq/services/go-api
+module github.com/rubybear-lgtm/poofmq/services/go-api
 
 go 1.24.0
 
@@ -7,7 +7,7 @@ require (
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.27.2
 	github.com/redis/go-redis/v9 v9.7.3
 	github.com/testcontainers/testcontainers-go v0.40.0
-	github.com/tortolero-ruben/poofmq/gen/go/poofmq v0.0.0
+	github.com/rubybear-lgtm/poofmq/gen/go/poofmq v0.0.0
 	google.golang.org/grpc v1.75.1
 	google.golang.org/protobuf v1.36.11
 )
@@ -73,4 +73,4 @@ require (
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
 
-replace github.com/tortolero-ruben/poofmq/gen/go/poofmq => ./gen/go/poofmq/v1
+replace github.com/rubybear-lgtm/poofmq/gen/go/poofmq => ./gen/go/poofmq/v1

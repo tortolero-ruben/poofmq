@@ -4,7 +4,7 @@ import (
 	"strings"
 	"testing"
 
-	poofmqv1 "github.com/tortolero-ruben/poofmq/gen/go/poofmq"
+	poofmqv1 "github.com/rubybear-lgtm/poofmq/gen/go/poofmq"
 	"google.golang.org/protobuf/types/known/structpb"
 )
 

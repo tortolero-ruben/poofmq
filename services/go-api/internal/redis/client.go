@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/redis/go-redis/v9"
-	"github.com/tortolero-ruben/poofmq/services/go-api/internal/config"
+	"github.com/rubybear-lgtm/poofmq/services/go-api/internal/config"
 )
 
 // Client wraps the Redis client with queue-specific operations.

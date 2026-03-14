@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"strings"
 
-	poofmqv1 "github.com/tortolero-ruben/poofmq/gen/go/poofmq"
+	poofmqv1 "github.com/rubybear-lgtm/poofmq/gen/go/poofmq"
 )
 
 // ValidatePushRequest validates a PushMessageRequest.

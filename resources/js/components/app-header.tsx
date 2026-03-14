@@ -37,7 +37,7 @@ import type { Auth, BreadcrumbItem, NavItem } from '@/types';
 import { dashboard } from '@/routes';
 import { quickstart as docsQuickstart } from '@/routes/docs';
 
-const REPOSITORY_URL = 'https://github.com/tortolero-ruben/poofmq';
+const REPOSITORY_URL = 'https://github.com/rubybear-lgtm/poofmq';
 
 type Props = {
     breadcrumbs?: BreadcrumbItem[];
